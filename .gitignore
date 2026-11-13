@@ -1,0 +1,30 @@
+# dependencies and builds
+node_modules/
+dist/
+release/
+out/
+.cache/
+
+# secrets: never commit API keys
+.env
+.env.*
+
+# working files, media and big optional downloads
+video-studio/.edit-jobs/
+video-studio/_analysis/
+video-studio/public/
+video-studio/models/
+video-studio/whisper.cpp/
+*.mov
+*.mp4
+*.wav
+*.onnx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+
+# the engine's own CC0 music and sound effects are needed
+!video-studio/.claude/skills/edit-style/assets/**

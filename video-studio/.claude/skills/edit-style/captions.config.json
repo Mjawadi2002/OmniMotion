@@ -1,0 +1,13 @@
+{
+  "_readme": "Caption style presets. Each one adjusts the look's caption: karaoke (the spoken word lights up in the accent colour), scale (size), upper (capital letters), box ('chunk': a dark pill behind the words, 'word': the spoken word sits in an accent box), pop (how much the spoken word grows), entitySerif (names and foreign words in the serif face), offsetY (move the line down (+) or up (-), as a fraction of the height). Captions always stay inside the platform safe zone and graphics always stay off them.",
+  "default": "classic",
+  "presets": {
+    "classic": {"label": "Classic", "description": "The spoken word lights up; names in serif italics.", "karaoke": true, "scale": 1, "upper": false, "box": "none", "pop": 0, "entitySerif": true, "offsetY": 0},
+    "clean": {"label": "Clean", "description": "Plain white words, nothing moves.", "karaoke": false, "scale": 1, "upper": false, "box": "none", "pop": 0, "entitySerif": false, "offsetY": 0},
+    "bold": {"label": "Bold", "description": "Big capital letters with the spoken word lit.", "karaoke": true, "scale": 1.22, "upper": true, "box": "none", "pop": 0, "entitySerif": false, "offsetY": 0},
+    "boxed": {"label": "Boxed", "description": "White words on a dark pill, readable on any footage.", "karaoke": false, "scale": 1, "upper": false, "box": "chunk", "pop": 0, "entitySerif": false, "offsetY": 0},
+    "highlight": {"label": "Highlight", "description": "The spoken word sits in an accent box.", "karaoke": true, "scale": 1.08, "upper": false, "box": "word", "pop": 0, "entitySerif": false, "offsetY": 0},
+    "pop": {"label": "Pop", "description": "The spoken word grows and lights up.", "karaoke": true, "scale": 1.1, "upper": false, "box": "none", "pop": 0.18, "entitySerif": false, "offsetY": 0},
+    "minimal": {"label": "Minimal", "description": "Small, low and quiet.", "karaoke": false, "scale": 0.86, "upper": false, "box": "none", "pop": 0, "entitySerif": false, "offsetY": 0.04}
+  }
+}

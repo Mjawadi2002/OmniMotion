@@ -1,0 +1,4916 @@
+{
+  "_readme": "SINGLE SOURCE OF TRUTH for the edit-style skill. Every color, font, size, position, duration, easing, rule and sound value lives here. Components and scripts read ONLY this file, the transcript and the new video's input. Percentages are fractions (0.5 = 50%). 'ss' = short side of the frame. 'ms' values are converted to frames with the output fps. Measurements come from 3 reference videos (720x1280, 30 fps, 9:16); see EDITING_STYLE_GUIDE.md for evidence and confidence.",
+  "version": 1,
+  "palette": "personal",
+  "output": {
+    "fps": 30,
+    "shortSide": 1080,
+    "defaultAspect": "9:16",
+    "studioPlaceholderMs": 3000,
+    "crf": 18,
+    "renderConcurrency": 2,
+    "offthreadCacheBytes": 600000000,
+    "renderTimeoutMs": 120000,
+    "aspects": {
+      "9:16": [
+        9,
+        16
+      ],
+      "16:9": [
+        16,
+        9
+      ],
+      "1:1": [
+        1,
+        1
+      ],
+      "4:5": [
+        4,
+        5
+      ]
+    },
+    "orientationThresholds": {
+      "portraitBelow": 0.87,
+      "landscapeAbove": 1.15
+    }
+  },
+  "palettes": {
+    "personal": {
+      "label": "Personal brand (colors sampled from the two reference videos: electric blue on paper and black)",
+      "preset": "ref",
+      "layoutDefault": "lightHead",
+      "roles": {
+        "primary": "#0284FF",
+        "accent": "#0284FF",
+        "accent2": "#0284FF",
+        "accent3": "#0284FF",
+        "accentDeep": "#0067CC",
+        "background": "#0A0A0B",
+        "backgroundAlt": "#16171A",
+        "shape": "#1E2025",
+        "surface": "#FFFFFF",
+        "surfaceAlt": "#F4F6FA",
+        "text": "#FFFFFF",
+        "textMuted": "#B9C0CA",
+        "textOnAccent": "#FFFFFF",
+        "textOnSurface": "#161616",
+        "outline": "#0284FF",
+        "shadow": "#0A2540",
+        "highlight": "#0284FF",
+        "glow": "#0284FF",
+        "captionBg": "#0A0A0B",
+        "captionText": "#FFFFFF",
+        "captionTextDim": "#C9CED6",
+        "captionTextPast": "#FFFFFF",
+        "positive": "#2FB36D",
+        "negative": "#F2604B",
+        "paper": "#E6EDF4",
+        "paperInk": "#161616",
+        "paperMuted": "#5B6573",
+        "card": "#FFFFFF",
+        "cardInk": "#161616",
+        "cardMuted": "#6B7380",
+        "dim": "#2F3238",
+        "dimInk": "#FFFFFF",
+        "backdrop": "#0A0A0B",
+        "red": "#F2604B",
+        "redSoft": "#FBE5E1"
+      },
+      "derivedRoles": {
+        "accentDeep": "darker blue for blue text on light surfaces (keeps WCAG AA)",
+        "paper": "sampled stage color of the light sections (#D6E5F1 to #E9EAF0 with texture), flattened",
+        "dim": "sampled overlay for big numbers (#333840 at ~90%)",
+        "red": "sampled strike-through and callout red",
+        "positive": "not present in the references (green for good states)"
+      }
+    },
+    "personalClassic": {
+      "label": "Personal brand, original palette (kept for reference)",
+      "preset": "soft",
+      "layoutDefault": "card",
+      "roles": {
+        "primary": "#20D0E8",
+        "accent": "#20D0E8",
+        "accentDeep": "#0FA5BA",
+        "background": "#07080C",
+        "backgroundAlt": "#0D1018",
+        "shape": "#11151F",
+        "surface": "#11151F",
+        "surfaceAlt": "#181D2A",
+        "text": "#FFFFFF",
+        "textMuted": "#A9B1C0",
+        "textOnAccent": "#07080C",
+        "textOnSurface": "#FFFFFF",
+        "outline": "#20D0E8",
+        "shadow": "#000000",
+        "highlight": "#20D0E8",
+        "captionBg": "#07080C",
+        "captionText": "#FFFFFF",
+        "captionTextDim": "#7B8496",
+        "captionTextPast": "#FFFFFF",
+        "positive": "#20D0E8",
+        "negative": "#FF5C7A",
+        "glow": "#20D0E8",
+        "paper": "#E9E8FB",
+        "paperInk": "#0B0B1A",
+        "paperMuted": "#4B4A6B",
+        "card": "#FFFFFF",
+        "cardInk": "#0B0B1A",
+        "cardMuted": "#4B4A6B",
+        "dim": "#14112F",
+        "dimInk": "#FFFFFF",
+        "backdrop": "#070713",
+        "red": "#FF5C7A",
+        "redSoft": "#FFE3E8"
+      },
+      "derivedRoles": {
+        "accentDeep": "darker shade of accent (not in brand brief)",
+        "backgroundAlt": "lighter shade of background",
+        "shape": "lighter shade of background",
+        "surface": "lighter shade of background",
+        "surfaceAlt": "lighter shade of background",
+        "textMuted": "white mixed 35% toward background",
+        "captionTextDim": "white mixed 52% toward background",
+        "negative": "no red in brand brief; coral chosen for X/error marks",
+        "positive": "reuses accent"
+      }
+    },
+    "tawelti": {
+      "label": "Tawelti product brand (app videos)",
+      "preset": "chunky",
+      "layoutDefault": "splitFull",
+      "named": {
+        "greenPrimary": "#1F4D3C",
+        "greenDeep": "#153A2D",
+        "greenArc": "#265C47",
+        "orange": "#E8A33D",
+        "orangeDeep": "#B9791F",
+        "cream": "#FCEEDC",
+        "creamDeep": "#EAC388",
+        "paper": "#F6F6F4",
+        "mint": "#95C4B0",
+        "mintSoft": "#E4EFE9",
+        "grayTile": "#B3B9B5",
+        "ink": "#14231C",
+        "white": "#FFFFFF"
+      },
+      "roles": {
+        "primary": "#1F4D3C",
+        "accent": "#E8A33D",
+        "accentDeep": "#B9791F",
+        "background": "#1F4D3C",
+        "backgroundAlt": "#153A2D",
+        "shape": "#265C47",
+        "surface": "#F6F6F4",
+        "surfaceAlt": "#FCEEDC",
+        "text": "#FCEEDC",
+        "textMuted": "#95C4B0",
+        "textOnAccent": "#14231C",
+        "textOnSurface": "#14231C",
+        "outline": "#14231C",
+        "shadow": "#14231C",
+        "highlight": "#E8A33D",
+        "captionBg": "#153A2D",
+        "captionText": "#FCEEDC",
+        "captionTextDim": "#95C4B0",
+        "captionTextPast": "#FCEEDC",
+        "positive": "#95C4B0",
+        "negative": "#C4482F",
+        "glow": "#E8A33D",
+        "paper": "#F6F6F4",
+        "paperInk": "#14231C",
+        "paperMuted": "#4A5E54",
+        "card": "#FFFFFF",
+        "cardInk": "#14231C",
+        "cardMuted": "#4A5E54",
+        "dim": "#153A2D",
+        "dimInk": "#FCEEDC",
+        "backdrop": "#153A2D",
+        "red": "#C4482F",
+        "redSoft": "#F7E1DB"
+      },
+      "derivedRoles": {
+        "negative": "no red in brand brief; terracotta derived from orangeDeep for X/error marks"
+      }
+    },
+    "personalAurora": {
+      "label": "Personal brand, Nocturne Aurora (previous look, used by the animated story film)",
+      "preset": "aurora",
+      "layoutDefault": "card",
+      "roles": {
+        "primary": "#FFD23F",
+        "accent": "#FFD23F",
+        "accent2": "#8B5CF6",
+        "accent3": "#22D3EE",
+        "accentDeep": "#B98A00",
+        "background": "#070713",
+        "backgroundAlt": "#0F0B2E",
+        "shape": "#1A1450",
+        "surface": "#14112F",
+        "surfaceAlt": "#1E1A4A",
+        "text": "#FFFFFF",
+        "textMuted": "#B9B7DA",
+        "textOnAccent": "#0B0B1A",
+        "textOnSurface": "#FFFFFF",
+        "outline": "#22D3EE",
+        "shadow": "#000000",
+        "highlight": "#FFD23F",
+        "captionBg": "#070713",
+        "captionText": "#FFFFFF",
+        "captionTextDim": "#8F8CB8",
+        "captionTextPast": "#FFFFFF",
+        "positive": "#34D399",
+        "negative": "#FF5C7A",
+        "glow": "#8B5CF6",
+        "paper": "#E9E8FB",
+        "paperInk": "#0B0B1A",
+        "paperMuted": "#4B4A6B",
+        "card": "#FFFFFF",
+        "cardInk": "#0B0B1A",
+        "cardMuted": "#4B4A6B",
+        "dim": "#14112F",
+        "dimInk": "#FFFFFF",
+        "backdrop": "#070713",
+        "red": "#FF5C7A",
+        "redSoft": "#FFE3E8"
+      },
+      "derivedRoles": {
+        "accent2": "violet for the animated aurora and gradient borders (replaces the old single cyan)",
+        "accent3": "cyan kept from the original brand as the cool end of the gradient",
+        "accentDeep": "darker shade of accent for light backings",
+        "backgroundAlt": "indigo-tinted shade of background",
+        "shape": "deep violet for background blobs",
+        "surface": "indigo-tinted shade of background",
+        "surfaceAlt": "lighter indigo surface",
+        "textMuted": "white mixed toward the violet background",
+        "captionTextDim": "white mixed toward the violet background",
+        "negative": "coral for X/error marks",
+        "positive": "mint green for checks"
+      }
+    },
+    "tech": {
+      "label": "Tech review (reference 6): navy stage, electric blue progress, amber emphasis, glass pills",
+      "preset": "ref",
+      "layoutDefault": "techDemo",
+      "roles": {
+        "primary": "#3B5BFF",
+        "accent": "#FFD23F",
+        "accent2": "#3B5BFF",
+        "accent3": "#35D07F",
+        "accentDeep": "#E0A800",
+        "background": "#060A1C",
+        "backgroundAlt": "#101C4A",
+        "shape": "#16224F",
+        "surface": "#FFFFFF",
+        "surfaceAlt": "#F3F5FA",
+        "text": "#FFFFFF",
+        "textMuted": "#9AA6D0",
+        "textOnAccent": "#14172B",
+        "textOnSurface": "#14172B",
+        "outline": "#3B5BFF",
+        "shadow": "#0A2540",
+        "highlight": "#FFD23F",
+        "glow": "#3B5BFF",
+        "captionBg": "#0A0A0B",
+        "captionText": "#FFFFFF",
+        "captionTextDim": "#C9CED6",
+        "captionTextPast": "#FFFFFF",
+        "positive": "#35D07F",
+        "negative": "#FF4D4D",
+        "paper": "#E6EDF4",
+        "paperInk": "#14172B",
+        "paperMuted": "#5B6573",
+        "card": "#FFFFFF",
+        "cardInk": "#14172B",
+        "cardMuted": "#6B7380",
+        "dim": "#0B1230",
+        "dimInk": "#FFFFFF",
+        "backdrop": "#060A1C",
+        "red": "#FF4D4D",
+        "redSoft": "#FFE3E3"
+      },
+      "derivedRoles": {
+        "accentDeep": "darker blue for blue text on light surfaces (keeps WCAG AA)",
+        "paper": "sampled stage color of the light sections (#D6E5F1 to #E9EAF0 with texture), flattened",
+        "dim": "sampled overlay for big numbers (#333840 at ~90%)",
+        "red": "sampled strike-through and callout red",
+        "positive": "not present in the references (green for good states)"
+      }
+    }
+  },
+  "contrast": {
+    "minNormal": 4.5,
+    "minLarge": 3,
+    "largeTextPctShort": 4.5,
+    "pairs": [
+      [
+        "captionText",
+        "captionBg",
+        "large"
+      ],
+      [
+        "captionText",
+        "background",
+        "large"
+      ],
+      [
+        "captionTextDim",
+        "captionBg",
+        "large"
+      ],
+      [
+        "captionTextDim",
+        "background",
+        "large"
+      ],
+      [
+        "captionTextPast",
+        "captionBg",
+        "large"
+      ],
+      [
+        "textOnAccent",
+        "accent",
+        "large"
+      ],
+      [
+        "accent",
+        "captionBg",
+        "large"
+      ],
+      [
+        "accent",
+        "background",
+        "large"
+      ],
+      [
+        "text",
+        "background",
+        "normal"
+      ],
+      [
+        "textMuted",
+        "background",
+        "normal"
+      ],
+      [
+        "textOnSurface",
+        "surface",
+        "normal"
+      ],
+      [
+        "textOnSurface",
+        "surfaceAlt",
+        "normal"
+      ],
+      [
+        "textOnAccent",
+        "accentDeep",
+        "normal"
+      ],
+      [
+        "text",
+        "backgroundAlt",
+        "normal"
+      ],
+      [
+        "paperInk",
+        "paper",
+        "normal"
+      ],
+      [
+        "paperMuted",
+        "paper",
+        "normal"
+      ],
+      [
+        "cardInk",
+        "card",
+        "normal"
+      ],
+      [
+        "cardMuted",
+        "card",
+        "normal"
+      ],
+      [
+        "dimInk",
+        "dim",
+        "normal"
+      ],
+      [
+        "red",
+        "redSoft",
+        "large"
+      ]
+    ],
+    "autoFix": true,
+    "pairsByPalette": {
+      "personal": [
+        [
+          "accent",
+          "paper",
+          "large"
+        ],
+        [
+          "accent",
+          "card",
+          "large"
+        ]
+      ],
+      "tawelti": [
+        [
+          "accentDeep",
+          "paper",
+          "large"
+        ]
+      ]
+    }
+  },
+  "presets": {
+    "soft": {
+      "_note": "Clean, soft glow look observed in all 3 references (thin outline, blurred glow shadow, medium radii).",
+      "outlineWidthPctShort": 0.0042,
+      "outlineRole": "outline",
+      "outlineAlpha": 0.9,
+      "shadow": {
+        "type": "glow",
+        "role": "glow",
+        "offsetXPctShort": 0,
+        "offsetYPctShort": 0,
+        "blurPctShort": 0.055,
+        "alpha": 0.38
+      },
+      "radiusPctShort": {
+        "card": 0.04,
+        "panel": 0.03,
+        "chip": 0.5,
+        "caption": 0.3,
+        "wordBox": 0.28,
+        "mini": 0.012
+      },
+      "fonts": {
+        "display": "Poppins",
+        "body": "Poppins",
+        "mono": "JetBrains Mono",
+        "arabic": "Cairo",
+        "serif": "Playfair Display"
+      },
+      "weights": {
+        "display": 700,
+        "caption": 700,
+        "body": 500,
+        "mono": 500,
+        "arabic": 800,
+        "serif": 700
+      },
+      "titleCase": "none",
+      "numberFont": "display",
+      "keywordCardStyle": "plain",
+      "backing": {
+        "card": "none",
+        "splitFull": "none",
+        "cardSmall": "none",
+        "full": "gradient",
+        "demo": "none",
+        "graphicOnly": "none",
+        "storyCaption": "pill"
+      },
+      "backingStyle": {
+        "pill": {
+          "role": "captionBg",
+          "alpha": 0.78,
+          "padXEm": 0.5,
+          "padYEm": 0.22,
+          "outline": false,
+          "hardShadow": false
+        },
+        "gradient": {
+          "role": "background",
+          "alphaBottom": 0.92,
+          "heightPctFrame": 0.62,
+          "stops": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.35
+            ],
+            [
+              0.55,
+              0.75
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      },
+      "wordHighlight": {
+        "style": "box",
+        "fillRole": "highlight",
+        "textRole": "textOnAccent",
+        "outline": false,
+        "pop": 1,
+        "glow": false
+      },
+      "stage": {
+        "backgroundStyle": "dotgrid-glow",
+        "gridOpacity": 0.1,
+        "glowAlpha": 0.22
+      },
+      "motion": {
+        "float": false,
+        "kenBurns": false,
+        "shimmer": false,
+        "borderSpin": false,
+        "pulse": false
+      }
+    },
+    "aurora": {
+      "_note": "Animated look for the personal brand: drifting aurora background, rotating gradient borders, floating cards, pop-on-word captions. Everything that moves is parameterised in 'motion' and 'stage.aurora'.",
+      "outlineWidthPctShort": 0.0055,
+      "outlineRole": "outline",
+      "outlineAlpha": 1,
+      "outlineStyle": "gradient",
+      "shadow": {
+        "type": "glow",
+        "role": "glow",
+        "offsetXPctShort": 0,
+        "offsetYPctShort": 0,
+        "blurPctShort": 0.08,
+        "alpha": 0.5
+      },
+      "radiusPctShort": {
+        "card": 0.05,
+        "panel": 0.04,
+        "chip": 0.5,
+        "caption": 0.42,
+        "wordBox": 0.3,
+        "mini": 0.016
+      },
+      "fonts": {
+        "display": "Outfit",
+        "body": "Inter",
+        "mono": "JetBrains Mono",
+        "arabic": "Cairo",
+        "serif": "Playfair Display"
+      },
+      "weights": {
+        "display": 800,
+        "caption": 800,
+        "body": 500,
+        "mono": 500,
+        "arabic": 800,
+        "serif": 700
+      },
+      "titleCase": "none",
+      "numberFont": "display",
+      "keywordCardStyle": "plain",
+      "backing": {
+        "card": "none",
+        "splitFull": "none",
+        "cardSmall": "none",
+        "full": "gradient",
+        "demo": "none",
+        "graphicOnly": "none",
+        "storyCaption": "pill"
+      },
+      "backingStyle": {
+        "pill": {
+          "role": "captionBg",
+          "alpha": 0.7,
+          "padXEm": 0.5,
+          "padYEm": 0.22,
+          "outline": false,
+          "hardShadow": false
+        },
+        "gradient": {
+          "role": "background",
+          "alphaBottom": 0.92,
+          "heightPctFrame": 0.62,
+          "stops": [
+            [
+              0,
+              0
+            ],
+            [
+              0.3,
+              0.35
+            ],
+            [
+              0.55,
+              0.75
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      },
+      "wordHighlight": {
+        "style": "box",
+        "fillRole": "highlight",
+        "textRole": "textOnAccent",
+        "outline": false,
+        "pop": 1.1,
+        "glow": true
+      },
+      "stage": {
+        "backgroundStyle": "aurora",
+        "gridOpacity": 0.08,
+        "glowAlpha": 0.22
+      },
+      "motion": {
+        "float": true,
+        "kenBurns": true,
+        "shimmer": true,
+        "borderSpin": true,
+        "pulse": true
+      }
+    },
+    "chunky": {
+      "_note": "Tawelti look: thick dark outlines, hard offset shadows, fully rounded chips, generous radii. 4 px outline at 1080 wide = 0.0037 of short side.",
+      "outlineWidthPctShort": 0.0037,
+      "outlineRole": "outline",
+      "outlineAlpha": 1,
+      "shadow": {
+        "type": "hard",
+        "role": "shadow",
+        "offsetXPctShort": 0.012,
+        "offsetYPctShort": 0.012,
+        "blurPctShort": 0,
+        "alpha": 1
+      },
+      "radiusPctShort": {
+        "card": 0.06,
+        "panel": 0.05,
+        "chip": 0.5,
+        "caption": 0.5,
+        "wordBox": 0.5,
+        "mini": 0.02
+      },
+      "fonts": {
+        "display": "Outfit",
+        "body": "Inter",
+        "mono": "JetBrains Mono",
+        "arabic": "Cairo",
+        "serif": "Playfair Display"
+      },
+      "weights": {
+        "display": 800,
+        "caption": 800,
+        "body": 500,
+        "mono": 600,
+        "arabic": 800,
+        "serif": 700
+      },
+      "titleCase": "none",
+      "numberFont": "mono",
+      "keywordCardStyle": "card",
+      "backing": {
+        "card": "pill",
+        "splitFull": "pill",
+        "cardSmall": "pill",
+        "full": "pill",
+        "demo": "pill",
+        "graphicOnly": "pill",
+        "storyCaption": "pill"
+      },
+      "backingStyle": {
+        "pill": {
+          "role": "captionBg",
+          "alpha": 1,
+          "padXEm": 0.55,
+          "padYEm": 0.26,
+          "outline": true,
+          "hardShadow": true
+        },
+        "gradient": {
+          "role": "background",
+          "alphaBottom": 0.7,
+          "heightPctFrame": 0.45,
+          "stops": [
+            [
+              0,
+              0
+            ],
+            [
+              0.4,
+              0.4
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      },
+      "wordHighlight": {
+        "style": "box",
+        "fillRole": "highlight",
+        "textRole": "textOnAccent",
+        "outline": true,
+        "pop": 1.06,
+        "glow": false
+      },
+      "stage": {
+        "backgroundStyle": "arcs",
+        "gridOpacity": 0,
+        "glowAlpha": 0
+      },
+      "motion": {
+        "float": true,
+        "kenBurns": true,
+        "shimmer": false,
+        "borderSpin": false,
+        "pulse": true
+      }
+    },
+    "ref": {
+      "_note": "Structure measured on the two reference videos: thin blue outlines on white window cards, soft glow, small radii, bold grotesque type with an italic serif highlight.",
+      "outlineWidthPctShort": 0.0028,
+      "outlineRole": "outline",
+      "outlineAlpha": 1,
+      "outlineStyle": "solid",
+      "shadow": {
+        "type": "glow",
+        "role": "glow",
+        "offsetXPctShort": 0,
+        "offsetYPctShort": 0.004,
+        "blurPctShort": 0.05,
+        "alpha": 0.28
+      },
+      "radiusPctShort": {
+        "card": 0.04,
+        "panel": 0.022,
+        "chip": 0.5,
+        "caption": 0.3,
+        "wordBox": 0.12,
+        "mini": 0.012,
+        "window": 0.022
+      },
+      "fonts": {
+        "display": "Inter",
+        "body": "Inter",
+        "serif": "Playfair Display",
+        "mono": "JetBrains Mono",
+        "arabic": "IBM Plex Sans Arabic",
+        "heading": "Inter",
+        "arabicHeading": "Cairo",
+        "numeric": "Space Grotesk"
+      },
+      "weights": {
+        "display": 800,
+        "caption": 800,
+        "body": 500,
+        "mono": 500,
+        "arabic": 700,
+        "serif": 700,
+        "heading": 800,
+        "arabicHeading": 800,
+        "numeric": 700
+      },
+      "titleCase": "none",
+      "numberFont": "display",
+      "keywordCardStyle": "plain",
+      "backing": {
+        "card": "none",
+        "splitFull": "none",
+        "cardSmall": "none",
+        "full": "gradient",
+        "demo": "none",
+        "graphicOnly": "none",
+        "storyCaption": "pill"
+      },
+      "backingStyle": {
+        "pill": {
+          "role": "captionBg",
+          "alpha": 0.7,
+          "padXEm": 0.5,
+          "padYEm": 0.22,
+          "outline": false,
+          "hardShadow": false
+        },
+        "gradient": {
+          "role": "background",
+          "alphaBottom": 0.9,
+          "heightPctFrame": 0.4,
+          "stops": [
+            [
+              0,
+              0
+            ],
+            [
+              0.4,
+              0.45
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        }
+      },
+      "wordHighlight": {
+        "style": "color",
+        "fillRole": "highlight",
+        "textRole": "textOnAccent",
+        "outline": false,
+        "pop": 1,
+        "glow": false
+      },
+      "stage": {
+        "backgroundStyle": "paper",
+        "gridOpacity": 0,
+        "glowAlpha": 0
+      },
+      "motion": {
+        "float": false,
+        "kenBurns": true,
+        "shimmer": false,
+        "borderSpin": false,
+        "pulse": false
+      }
+    }
+  },
+  "fonts": {
+    "registry": {
+      "Poppins": {
+        "package": "poppins",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Outfit": {
+        "package": "outfit",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Inter": {
+        "package": "inter",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "JetBrains Mono": {
+        "package": "jetbrains-mono",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Cairo": {
+        "package": "cairo",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      },
+      "Playfair Display": {
+        "package": "playfair-display",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ],
+        "styles": [
+          "normal",
+          "italic"
+        ]
+      },
+      "IBM Plex Sans Arabic": {
+        "package": "ibm-plex-sans-arabic",
+        "weights": [
+          400,
+          500,
+          600,
+          700
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      },
+      "Space Grotesk": {
+        "package": "space-grotesk",
+        "weights": [
+          400,
+          500,
+          600,
+          700
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Montserrat": {
+        "package": "montserrat",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Sora": {
+        "package": "sora",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Manrope": {
+        "package": "manrope",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "DM Sans": {
+        "package": "dm-sans",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Archivo": {
+        "package": "archivo",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Bricolage Grotesque": {
+        "package": "bricolage-grotesque",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Anton": {
+        "package": "anton",
+        "weights": [
+          400
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Bebas Neue": {
+        "package": "bebas-neue",
+        "weights": [
+          400
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Oswald": {
+        "package": "oswald",
+        "weights": [
+          400,
+          500,
+          600,
+          700
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Barlow Condensed": {
+        "package": "barlow-condensed",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Syne": {
+        "package": "syne",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ]
+      },
+      "Fraunces": {
+        "package": "fraunces",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "latin"
+        ],
+        "styles": [
+          "normal",
+          "italic"
+        ]
+      },
+      "Lora": {
+        "package": "lora",
+        "weights": [
+          400,
+          500,
+          600,
+          700
+        ],
+        "subsets": [
+          "latin"
+        ],
+        "styles": [
+          "normal",
+          "italic"
+        ]
+      },
+      "DM Serif Display": {
+        "package": "dm-serif-display",
+        "weights": [
+          400
+        ],
+        "subsets": [
+          "latin"
+        ],
+        "styles": [
+          "normal",
+          "italic"
+        ]
+      },
+      "Tajawal": {
+        "package": "tajawal",
+        "weights": [
+          400,
+          500,
+          700,
+          800
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      },
+      "Almarai": {
+        "package": "almarai",
+        "weights": [
+          400,
+          700,
+          800
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      },
+      "Noto Kufi Arabic": {
+        "package": "noto-kufi-arabic",
+        "weights": [
+          400,
+          500,
+          600,
+          700,
+          800
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      },
+      "El Messiri": {
+        "package": "el-messiri",
+        "weights": [
+          400,
+          500,
+          600,
+          700
+        ],
+        "subsets": [
+          "arabic",
+          "latin"
+        ]
+      }
+    },
+    "subsetRanges": {
+      "latin": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+      "latin-ext": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+      "arabic": "U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FE80-FEFC"
+    },
+    "fallbackStack": [
+      "IBM Plex Sans Arabic",
+      "Inter",
+      "Cairo",
+      "Segoe UI",
+      "Tahoma",
+      "Arial",
+      "sans-serif"
+    ],
+    "scripts": {
+      "arabic": "[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]",
+      "hebrew": "[\\u0590-\\u05FF]",
+      "latin": "[A-Za-z\\u00C0-\\u024F]"
+    },
+    "rtlScripts": [
+      "arabic",
+      "hebrew"
+    ],
+    "catalog": [
+      {
+        "family": "Inter",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Poppins",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Outfit",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Montserrat",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Sora",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Manrope",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "DM Sans",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Archivo",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Space Grotesk",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700"
+      },
+      {
+        "family": "Bricolage Grotesque",
+        "kind": "sans",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Anton",
+        "kind": "display",
+        "weights": "400"
+      },
+      {
+        "family": "Bebas Neue",
+        "kind": "display",
+        "weights": "400"
+      },
+      {
+        "family": "Oswald",
+        "kind": "display",
+        "weights": "400, 500, 600, 700"
+      },
+      {
+        "family": "Barlow Condensed",
+        "kind": "display",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Syne",
+        "kind": "display",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Playfair Display",
+        "kind": "serif",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Fraunces",
+        "kind": "serif",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Lora",
+        "kind": "serif",
+        "weights": "400, 500, 600, 700"
+      },
+      {
+        "family": "DM Serif Display",
+        "kind": "serif",
+        "weights": "400"
+      },
+      {
+        "family": "JetBrains Mono",
+        "kind": "mono",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "IBM Plex Sans Arabic",
+        "kind": "arabic",
+        "weights": "400, 500, 600, 700"
+      },
+      {
+        "family": "Cairo",
+        "kind": "arabic",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "Tajawal",
+        "kind": "arabic",
+        "weights": "400, 500, 700, 800"
+      },
+      {
+        "family": "Almarai",
+        "kind": "arabic",
+        "weights": "400, 700, 800"
+      },
+      {
+        "family": "Noto Kufi Arabic",
+        "kind": "arabic",
+        "weights": "400, 500, 600, 700, 800"
+      },
+      {
+        "family": "El Messiri",
+        "kind": "arabic",
+        "weights": "400, 500, 600, 700"
+      }
+    ]
+  },
+  "layouts": {
+    "_note": "All coordinates are fractions of frame width (x,w) and height (y,h). 'portrait' values are measured on the references (9:16). 'square' and 'landscape' are DERIVED (no reference exists) and flagged in the style guide.",
+    "portrait": {
+      "card": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.02,
+          "w": 0.9,
+          "h": 0.37
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.065,
+          "y": 0.6,
+          "w": 0.868,
+          "h": 0.363,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.434,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.5
+        }
+      },
+      "splitFull": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.03,
+          "w": 0.9,
+          "h": 0.46
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0,
+          "y": 0.541,
+          "w": 1,
+          "h": 0.459,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.508,
+          "maxW": 0.92
+        },
+        "translation": {
+          "cy": 0.525
+        }
+      },
+      "cardSmall": {
+        "graphic": {
+          "x": 0.04,
+          "y": 0.053,
+          "w": 0.92,
+          "h": 0.497
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.188,
+          "y": 0.621,
+          "w": 0.625,
+          "h": 0.346,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.568,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.608
+        }
+      },
+      "full": {
+        "graphic": {
+          "x": 0.06,
+          "y": 0.7,
+          "w": 0.88,
+          "h": 0.14
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.678,
+          "maxW": 0.88
+        },
+        "translation": {
+          "cy": 0.719
+        }
+      },
+      "demo": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.07,
+          "w": 0.9,
+          "h": 0.68
+        },
+        "head": {
+          "mode": "backdrop",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.84,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.885
+        }
+      },
+      "graphicOnly": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.06,
+          "w": 0.9,
+          "h": 0.66
+        },
+        "head": {
+          "mode": "none",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.8,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.84
+        }
+      }
+    },
+    "square": {
+      "card": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.04,
+          "w": 0.9,
+          "h": 0.4
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.22,
+          "y": 0.58,
+          "w": 0.56,
+          "h": 0.38,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.5,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.55
+        }
+      },
+      "splitFull": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.04,
+          "w": 0.9,
+          "h": 0.4
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0,
+          "y": 0.56,
+          "w": 1,
+          "h": 0.44,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.5,
+          "maxW": 0.92
+        },
+        "translation": {
+          "cy": 0.54
+        }
+      },
+      "cardSmall": {
+        "graphic": {
+          "x": 0.05,
+          "y": 0.04,
+          "w": 0.9,
+          "h": 0.4
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.25,
+          "y": 0.6,
+          "w": 0.5,
+          "h": 0.36,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.5,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.55
+        }
+      },
+      "full": {
+        "graphic": {
+          "x": 0.06,
+          "y": 0.66,
+          "w": 0.88,
+          "h": 0.2
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.62,
+          "maxW": 0.88
+        },
+        "translation": {
+          "cy": 0.67
+        }
+      },
+      "demo": {
+        "graphic": {
+          "x": 0.06,
+          "y": 0.06,
+          "w": 0.88,
+          "h": 0.64
+        },
+        "head": {
+          "mode": "backdrop",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.83,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.88
+        }
+      },
+      "graphicOnly": {
+        "graphic": {
+          "x": 0.06,
+          "y": 0.08,
+          "w": 0.88,
+          "h": 0.6
+        },
+        "head": {
+          "mode": "none",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.8,
+          "maxW": 0.9
+        },
+        "translation": {
+          "cy": 0.85
+        }
+      }
+    },
+    "landscape": {
+      "card": {
+        "graphic": {
+          "x": 0.04,
+          "y": 0.06,
+          "w": 0.56,
+          "h": 0.72
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.64,
+          "y": 0.1,
+          "w": 0.32,
+          "h": 0.64,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.88,
+          "maxW": 0.8
+        },
+        "translation": {
+          "cy": 0.94
+        }
+      },
+      "splitFull": {
+        "graphic": {
+          "x": 0.04,
+          "y": 0.06,
+          "w": 0.56,
+          "h": 0.72
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0.62,
+          "y": 0,
+          "w": 0.38,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.31,
+          "cy": 0.88,
+          "maxW": 0.54
+        },
+        "translation": {
+          "cy": 0.94
+        }
+      },
+      "cardSmall": {
+        "graphic": {
+          "x": 0.04,
+          "y": 0.06,
+          "w": 0.56,
+          "h": 0.72
+        },
+        "head": {
+          "mode": "card",
+          "x": 0.66,
+          "y": 0.14,
+          "w": 0.28,
+          "h": 0.56,
+          "radius": "card"
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.88,
+          "maxW": 0.8
+        },
+        "translation": {
+          "cy": 0.94
+        }
+      },
+      "full": {
+        "graphic": {
+          "x": 0.08,
+          "y": 0.62,
+          "w": 0.4,
+          "h": 0.2
+        },
+        "head": {
+          "mode": "fill",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.84,
+          "maxW": 0.7
+        },
+        "translation": {
+          "cy": 0.91
+        }
+      },
+      "demo": {
+        "graphic": {
+          "x": 0.1,
+          "y": 0.06,
+          "w": 0.8,
+          "h": 0.7
+        },
+        "head": {
+          "mode": "backdrop",
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.88,
+          "maxW": 0.8
+        },
+        "translation": {
+          "cy": 0.94
+        }
+      },
+      "graphicOnly": {
+        "graphic": {
+          "x": 0.08,
+          "y": 0.08,
+          "w": 0.84,
+          "h": 0.66
+        },
+        "head": {
+          "mode": "none",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "radius": 0
+        },
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.86,
+          "maxW": 0.8
+        },
+        "translation": {
+          "cy": 0.93
+        }
+      }
+    },
+    "headCrop": {
+      "objectPositionX": 0.5,
+      "objectPositionY": 0.3
+    }
+  },
+  "captions": {
+    "fontSizePctShort": 0.06,
+    "translationFontSizePctShort": 0.028,
+    "lineHeight": 1.2,
+    "letterSpacingEm": 0,
+    "textTransform": "none",
+    "maxWordsPerPage": 4,
+    "maxCharsPerPage": 26,
+    "maxLines": 1,
+    "paging": {
+      "breakOnPauseMs": 320,
+      "breakAfterPunctuation": true,
+      "punctuation": "[.!?;:,،؛؟…]",
+      "minPageMs": 450,
+      "leadInMs": 40,
+      "tailHoldMs": 140
+    },
+    "wordState": {
+      "past": "captionTextPast",
+      "active": "highlight",
+      "upcoming": "captionTextDim",
+      "upcomingOpacity": 1,
+      "upcomingOnFootage": "textMuted",
+      "footageShadow": {
+        "blurPctShort": 0.012,
+        "offsetPctShort": 0.004,
+        "alpha": 0.75
+      },
+      "switchMs": 70,
+      "activeLeadMs": 30
+    },
+    "emphasis": {
+      "roleOnLight": "accentDeep",
+      "roleOnDark": "accent",
+      "applyToNumbers": true,
+      "applyToForeignScript": true
+    },
+    "wordBox": {
+      "padXEm": 0.22,
+      "padYEm": 0.03
+    },
+    "translation": {
+      "enabled": false,
+      "role": "text",
+      "weight": 700,
+      "opacity": 0.92,
+      "shadow": true
+    }
+  },
+  "animations": {
+    "easings": {
+      "outCubic": [
+        0.33,
+        1,
+        0.68,
+        1
+      ],
+      "inOutCubic": [
+        0.65,
+        0,
+        0.35,
+        1
+      ],
+      "outBack": [
+        0.34,
+        1.56,
+        0.64,
+        1
+      ],
+      "inCubic": [
+        0.32,
+        0,
+        0.67,
+        0
+      ],
+      "linear": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "captionPageEnter": {
+      "ms": 120,
+      "easing": "outCubic",
+      "from": {
+        "opacity": 0,
+        "y": 0.18,
+        "scale": 0.94,
+        "blur": 0
+      }
+    },
+    "captionPageExit": {
+      "ms": 80,
+      "easing": "inCubic",
+      "to": {
+        "opacity": 0,
+        "y": -0.08,
+        "scale": 0.98,
+        "blur": 0
+      }
+    },
+    "panelEnter": {
+      "ms": 200,
+      "easing": "outCubic",
+      "from": {
+        "opacity": 0,
+        "y": 0.04,
+        "scale": 0.95,
+        "blur": 8
+      }
+    },
+    "panelExit": {
+      "ms": 133,
+      "easing": "inCubic",
+      "to": {
+        "opacity": 0,
+        "y": -0.02,
+        "scale": 0.98,
+        "blur": 8
+      }
+    },
+    "itemStagger": {
+      "ms": 220,
+      "easing": "outBack",
+      "from": {
+        "opacity": 0,
+        "y": 0.05,
+        "scale": 0.9,
+        "blur": 0
+      },
+      "staggerMs": 180
+    },
+    "counter": {
+      "ms": 650,
+      "easing": "outCubic"
+    },
+    "hookTitle": {
+      "ms": 330,
+      "easing": "outCubic",
+      "from": {
+        "opacity": 0,
+        "y": 0.06,
+        "scale": 1.18,
+        "blur": 14
+      },
+      "staggerMs": 430
+    },
+    "hookStrike": {
+      "delayMs": 450,
+      "ms": 300
+    },
+    "layoutExpand": {
+      "ms": 330,
+      "easing": "outCubic"
+    },
+    "layoutSwap": {
+      "ms": 200,
+      "easing": "inOutCubic"
+    },
+    "punchIn": {
+      "ms": 0,
+      "easing": "linear"
+    },
+    "wipe": {
+      "ms": 330,
+      "easing": "inOutCubic",
+      "angleDeg": 22
+    },
+    "ctaPop": {
+      "ms": 260,
+      "easing": "outBack",
+      "from": {
+        "opacity": 0,
+        "y": 0.06,
+        "scale": 0.7,
+        "blur": 0
+      }
+    },
+    "swapVariants": {
+      "_note": "Graphic-to-graphic transition variants. ref4/ref5 (second batch of references) show blur dissolves, zoom-blur reveals, slide-ups and a hard flash cut into section title cards. Rotated by transitions.swapRotation.",
+      "blurFade": {
+        "enter": {
+          "ms": 200,
+          "easing": "outCubic",
+          "from": {
+            "opacity": 0,
+            "y": 0.04,
+            "scale": 0.95,
+            "blur": 8
+          }
+        },
+        "exit": {
+          "ms": 133,
+          "easing": "inCubic",
+          "to": {
+            "opacity": 0,
+            "y": -0.02,
+            "scale": 0.98,
+            "blur": 8
+          }
+        },
+        "sfx": "tick"
+      },
+      "zoomBlur": {
+        "enter": {
+          "ms": 260,
+          "easing": "outCubic",
+          "from": {
+            "opacity": 0,
+            "y": 0,
+            "scale": 1.14,
+            "blur": 18
+          }
+        },
+        "exit": {
+          "ms": 160,
+          "easing": "inCubic",
+          "to": {
+            "opacity": 0,
+            "y": 0,
+            "scale": 0.9,
+            "blur": 16
+          }
+        },
+        "sfx": "swish"
+      },
+      "slideUp": {
+        "enter": {
+          "ms": 240,
+          "easing": "outCubic",
+          "from": {
+            "opacity": 0,
+            "y": 0.09,
+            "scale": 1,
+            "blur": 6
+          }
+        },
+        "exit": {
+          "ms": 150,
+          "easing": "inCubic",
+          "to": {
+            "opacity": 0,
+            "y": -0.07,
+            "scale": 1,
+            "blur": 6
+          }
+        },
+        "sfx": "swish"
+      },
+      "flashCut": {
+        "enter": {
+          "ms": 120,
+          "easing": "outCubic",
+          "from": {
+            "opacity": 0,
+            "y": 0,
+            "scale": 0.97,
+            "blur": 0
+          }
+        },
+        "exit": {
+          "ms": 90,
+          "easing": "inCubic",
+          "to": {
+            "opacity": 0,
+            "y": 0,
+            "scale": 1,
+            "blur": 0
+          }
+        },
+        "sfx": "hit",
+        "flash": true
+      }
+    }
+  },
+  "hook": {
+    "enabled": true,
+    "durationMs": 2200,
+    "holdMs": 700,
+    "sentenceEnd": "[.!?؟…。]$",
+    "subtitleMaxWords": 8,
+    "subtitleSizePctShort": 0.04,
+    "tagSizePctShort": 0.03,
+    "maxTags": 3,
+    "tagGapPctShort": 0.015,
+    "tagDelayMs": 350,
+    "maxWords": 5,
+    "maxCharsPerLine": 14,
+    "titleSizePctShort": 0.13,
+    "titleLineHeight": 1.08,
+    "emphasisWords": 1,
+    "hideCaptions": false,
+    "strikeLastWord": false,
+    "wipeOut": true,
+    "background": "stage"
+  },
+  "visuals": {
+    "rules": [
+      {
+        "id": "cta",
+        "detect": "lexicon:cta",
+        "component": "CtaPill",
+        "leadMs": -150,
+        "holdMs": 3200,
+        "triggerWords": 1
+      },
+      {
+        "id": "url",
+        "detect": "regex:url",
+        "component": "LinkCard",
+        "leadMs": -150,
+        "holdMs": 2600,
+        "triggerWords": 1
+      },
+      {
+        "id": "enumeration",
+        "detect": "lexicon:listMarker|structure:enumeration",
+        "component": "Checklist",
+        "leadMs": -120,
+        "holdMs": 3000,
+        "triggerWords": 3
+      },
+      {
+        "id": "percent",
+        "detect": "regex:percent",
+        "component": "PercentRing",
+        "leadMs": -200,
+        "holdMs": 2600,
+        "triggerWords": 1
+      },
+      {
+        "id": "quote",
+        "detect": "structure:quoted",
+        "component": "KeyPhrase",
+        "leadMs": -150,
+        "holdMs": 2600,
+        "triggerWords": 2
+      },
+      {
+        "id": "number",
+        "detect": "regex:number",
+        "component": "StatCounter",
+        "leadMs": -200,
+        "holdMs": 2200,
+        "triggerWords": 1
+      },
+      {
+        "id": "asset",
+        "detect": "asset:name",
+        "component": "ImageCard",
+        "leadMs": -120,
+        "holdMs": 2400,
+        "triggerWords": 1
+      },
+      {
+        "id": "foreignTerm",
+        "detect": "structure:foreignScript|structure:capsOrMixedCase",
+        "component": "KeywordCard",
+        "leadMs": -100,
+        "holdMs": 2000,
+        "triggerWords": 1
+      }
+    ],
+    "fallback": {
+      "component": "KeywordCard",
+      "alternate": [
+        "KeywordCard",
+        "KeyPhrase"
+      ],
+      "phraseWords": 3,
+      "pickBy": "rarestLongestWord",
+      "holdMs": 2200,
+      "idleAfterMs": 350,
+      "searchWindowMs": 2000,
+      "beatMs": 3200,
+      "beatEvery": 4,
+      "maxHeadOnlyShare": 0.18
+    },
+    "keywordCard": {
+      "sizePctShort": 0.1,
+      "barWidthPctShort": 0.14,
+      "barHeightPctShort": 0.012,
+      "gapPctShort": 0.025,
+      "cardPadXPctShort": 0.06,
+      "cardPadYPctShort": 0.045,
+      "softTextRole": "text"
+    },
+    "beats": {
+      "maxIdleMs": 3200,
+      "minGapBetweenMs": 160,
+      "maxHoldMs": 6000,
+      "minHoldMs": 1300,
+      "stickyUntilNext": true,
+      "stickyFactor": 1.6,
+      "headOnlyBeatMinMs": 2200,
+      "lowPriority": [
+        "KeywordCard",
+        "KeywordChip",
+        "KeyPhrase"
+      ],
+      "headBeatPeriodMs": 13000,
+      "headBeatMs": 3200,
+      "headBeatFirstMs": 9000,
+      "maxVisualsPerMinute": 22
+    },
+    "stat": {
+      "sizePctShort": 0.2,
+      "labelSizePctShort": 0.04,
+      "labelWords": 2,
+      "role": "accent"
+    },
+    "chip": {
+      "sizePctShort": 0.05,
+      "padXEm": 0.7,
+      "padYEm": 0.32,
+      "role": "accent",
+      "textRole": "textOnAccent",
+      "maxChars": 18
+    },
+    "checklist": {
+      "style": "flow",
+      "flowMinItems": 3,
+      "nodeSizePctShort": 0.075,
+      "lineWidthPctShort": 0.006,
+      "lineDrawMs": 380,
+      "rowGapPctShort": 0.035,
+      "maxItems": 4,
+      "itemSizePctShort": 0.04,
+      "itemHeightPctShort": 0.09,
+      "gapPctShort": 0.02,
+      "checkRole": "positive"
+    },
+    "linkCard": {
+      "titleSizePctShort": 0.05,
+      "subSizePctShort": 0.03,
+      "badgeText": "link"
+    },
+    "image": {
+      "extensions": [
+        "png",
+        "jpg",
+        "jpeg",
+        "webp",
+        "svg"
+      ],
+      "maxHeightPctGraphic": 0.55,
+      "radius": "panel"
+    },
+    "cta": {
+      "sizePctShort": 0.085,
+      "icon": "chat",
+      "minTriggerDurationLeftMs": 2500
+    },
+    "keyPhrase": {
+      "phraseFromForeignRuns": true,
+      "sizePctShort": 0.075,
+      "maxWords": 4,
+      "markerAlpha": 0.38,
+      "markerSweepMs": 420,
+      "underlineMs": 480,
+      "underlineWidthPctShort": 0.012,
+      "maxWidthPct": 0.9
+    },
+    "percentRing": {
+      "sizePctShort": 0.34,
+      "strokePctShort": 0.04,
+      "fillMs": 900,
+      "labelSizePctShort": 0.045,
+      "trackAlpha": 0.22
+    },
+    "stepBadge": {
+      "sizePctShort": 0.042,
+      "xPct": 0.93,
+      "yPct": 0.035,
+      "padXEm": 0.8,
+      "padYEm": 0.35,
+      "enterMs": 260
+    },
+    "arrow": {
+      "enabled": true,
+      "lengthPctShort": 0.16,
+      "strokePctShort": 0.011,
+      "drawMs": 520,
+      "delayMs": 260,
+      "alternate": true
+    },
+    "sectionTitle": {
+      "sizePctShort": 0.1,
+      "topicSizePctShort": 0.06,
+      "typeCharsPerSec": 14,
+      "holdMs": 2800,
+      "numberRole": "highlight",
+      "minOrdinals": 2,
+      "minAvgGapMs": 6000,
+      "leadMs": -250,
+      "topicMaxChars": 18
+    },
+    "demo": {
+      "components": [
+        "ImageCard",
+        "LinkCard"
+      ],
+      "minMs": 2400,
+      "leadInMs": 250,
+      "tailMs": 150
+    }
+  },
+  "lexicons": {
+    "stopwords": {
+      "ar": [
+        "في",
+        "من",
+        "على",
+        "إلى",
+        "الى",
+        "عن",
+        "مع",
+        "هذا",
+        "هذه",
+        "هذي",
+        "هو",
+        "هي",
+        "هم",
+        "أنا",
+        "انا",
+        "أنت",
+        "انت",
+        "نحن",
+        "كان",
+        "كل",
+        "ما",
+        "لا",
+        "لم",
+        "لن",
+        "أن",
+        "ان",
+        "إن",
+        "اللي",
+        "الي",
+        "اللى",
+        "و",
+        "ف",
+        "ب",
+        "ل",
+        "يعني",
+        "كيف",
+        "كيفاش",
+        "شنية",
+        "وين",
+        "علاش",
+        "باش",
+        "بش",
+        "متاع",
+        "امتاع",
+        "امتاعك",
+        "امتاعي",
+        "كيف",
+        "اما",
+        "أما",
+        "بعد",
+        "قبل",
+        "فيها",
+        "فيه",
+        "فيهم",
+        "معاك",
+        "معاكش",
+        "عندي",
+        "عندك",
+        "عنده",
+        "ولا",
+        "وكان",
+        "وهذي",
+        "وهذا",
+        "ثم",
+        "حتى",
+        "كي",
+        "كيف",
+        "مش",
+        "موش",
+        "برشا",
+        "شوية",
+        "بيها",
+        "بيه",
+        "بيهم",
+        "لي",
+        "لك",
+        "ليك",
+        "لازم",
+        "تو",
+        "توا",
+        "هاذي",
+        "هاذا",
+        "هاذاك",
+        "ديما",
+        "كان",
+        "كانت",
+        "يكون",
+        "تكون",
+        "معناها",
+        "قاعدين",
+        "هوني",
+        "هاك",
+        "فما",
+        "الحقيقة",
+        "حاجات",
+        "حاجة",
+        "هكا",
+        "هكاكا",
+        "برك",
+        "يخي",
+        "الكل",
+        "هدي",
+        "هدا",
+        "واحد",
+        "وحدة",
+        "ونصور",
+        "يعرفوا",
+        "معكم",
+        "عندكم"
+      ],
+      "en": [
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "but",
+        "of",
+        "to",
+        "in",
+        "on",
+        "at",
+        "for",
+        "with",
+        "by",
+        "from",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "it",
+        "this",
+        "that",
+        "these",
+        "those",
+        "i",
+        "you",
+        "he",
+        "she",
+        "we",
+        "they",
+        "my",
+        "your",
+        "his",
+        "her",
+        "our",
+        "their",
+        "as",
+        "so",
+        "if",
+        "then",
+        "than",
+        "not",
+        "no",
+        "do",
+        "does",
+        "did",
+        "have",
+        "has",
+        "had",
+        "will",
+        "would",
+        "can",
+        "could",
+        "just",
+        "very",
+        "really",
+        "about",
+        "into",
+        "out",
+        "up",
+        "down",
+        "over",
+        "basically",
+        "actually",
+        "mostly",
+        "especially",
+        "literally",
+        "kinda",
+        "tell",
+        "stay",
+        "tuned",
+        "upcoming",
+        "any",
+        "type",
+        "also",
+        "guys",
+        "hey",
+        "finally",
+        "going",
+        "working",
+        "studying",
+        "doing",
+        "please",
+        "maybe",
+        "something",
+        "everything",
+        "days",
+        "few",
+        "sharing",
+        "discover",
+        "sure",
+        "step",
+        "steps",
+        "way",
+        "thing",
+        "things",
+        "today",
+        "launch"
+      ],
+      "fr": [
+        "le",
+        "la",
+        "les",
+        "un",
+        "une",
+        "des",
+        "du",
+        "de",
+        "et",
+        "ou",
+        "mais",
+        "dans",
+        "sur",
+        "avec",
+        "pour",
+        "par",
+        "est",
+        "sont",
+        "être",
+        "ce",
+        "cette",
+        "ces",
+        "je",
+        "tu",
+        "il",
+        "elle",
+        "nous",
+        "vous",
+        "ils",
+        "elles",
+        "mon",
+        "ma",
+        "mes",
+        "ton",
+        "ta",
+        "tes",
+        "son",
+        "sa",
+        "ses",
+        "que",
+        "qui",
+        "ne",
+        "pas",
+        "plus",
+        "très",
+        "comme",
+        "au",
+        "aux",
+        "en",
+        "y",
+        "a",
+        "ai",
+        "as",
+        "avons",
+        "avez",
+        "ont"
+      ]
+    },
+    "listMarker": {
+      "ar": [
+        "أولا",
+        "اولا",
+        "أول",
+        "اول",
+        "الأول",
+        "الاول",
+        "ثانيا",
+        "ثاني",
+        "الثاني",
+        "الثانية",
+        "ثالثا",
+        "الثالث",
+        "الثالثة",
+        "ثم",
+        "وبعد",
+        "وأخيرا",
+        "واخيرا",
+        "أخيرا",
+        "اخيرا",
+        "واحد",
+        "وحدة",
+        "وحدة"
+      ],
+      "en": [
+        "first",
+        "second",
+        "third",
+        "fourth",
+        "finally",
+        "next",
+        "then",
+        "also",
+        "another",
+        "lastly",
+        "one"
+      ],
+      "fr": [
+        "premier",
+        "première",
+        "deuxième",
+        "second",
+        "troisième",
+        "enfin",
+        "ensuite",
+        "puis",
+        "aussi",
+        "également",
+        "un",
+        "une"
+      ]
+    },
+    "cta": {
+      "ar": [
+        "اكتب",
+        "أكتب",
+        "اشترك",
+        "تابع",
+        "تابعني",
+        "علق",
+        "علّق",
+        "كومنتر",
+        "كومنت",
+        "كومنتز",
+        "فولو",
+        "لينك",
+        "الرابط",
+        "ابعث",
+        "نبعثلك",
+        "نبعت",
+        "نبعث",
+        "اضغط",
+        "شارك",
+        "لايك",
+        "سبسكرايب"
+      ],
+      "en": [
+        "comment",
+        "subscribe",
+        "follow",
+        "like",
+        "share",
+        "link",
+        "click",
+        "dm",
+        "download",
+        "join",
+        "sign"
+      ],
+      "fr": [
+        "commente",
+        "commentez",
+        "abonne",
+        "abonnez",
+        "suis",
+        "suivez",
+        "lien",
+        "clique",
+        "cliquez",
+        "partage",
+        "télécharge",
+        "rejoins"
+      ]
+    },
+    "ordinals": {
+      "en": {
+        "first": 1,
+        "second": 2,
+        "third": 3,
+        "fourth": 4,
+        "fifth": 5,
+        "sixth": 6,
+        "seventh": 7,
+        "eighth": 8,
+        "ninth": 9,
+        "tenth": 10
+      },
+      "ar": {
+        "الاول": 1,
+        "الاولي": 1,
+        "اولا": 1,
+        "الثاني": 2,
+        "ثانيا": 2,
+        "الثانيه": 2,
+        "الثالث": 3,
+        "الثالثه": 3,
+        "ثالثا": 3,
+        "الرابع": 4,
+        "الرابعه": 4,
+        "الخامس": 5,
+        "الخامسه": 5,
+        "السادس": 6,
+        "السابع": 7,
+        "الثامن": 8,
+        "التاسع": 9,
+        "العاشر": 10
+      },
+      "fr": {
+        "premier": 1,
+        "première": 1,
+        "premiere": 1,
+        "deuxième": 2,
+        "deuxieme": 2,
+        "second": 2,
+        "troisième": 3,
+        "troisieme": 3,
+        "quatrième": 4,
+        "quatrieme": 4,
+        "cinquième": 5,
+        "cinquieme": 5,
+        "sixième": 6,
+        "sixieme": 6
+      }
+    },
+    "stepsLabel": {
+      "en": "{n} steps",
+      "ar": "{n} خطوات",
+      "fr": "{n} étapes"
+    },
+    "sectionLabel": {
+      "en": "Number {n}",
+      "ar": "رقم {n}",
+      "fr": "Numéro {n}"
+    },
+    "numberWords": {
+      "ar": [
+        "واحد",
+        "اثنين",
+        "اثنان",
+        "ثلاثة",
+        "ثلاثه",
+        "أربعة",
+        "اربعة",
+        "خمسة",
+        "ستة",
+        "سبعة",
+        "ثمانية",
+        "تسعة",
+        "عشرة",
+        "مية",
+        "مائة",
+        "ألف",
+        "الف",
+        "مليون"
+      ],
+      "en": [
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "hundred",
+        "thousand",
+        "million",
+        "billion",
+        "half"
+      ],
+      "fr": [
+        "un",
+        "deux",
+        "trois",
+        "quatre",
+        "cinq",
+        "six",
+        "sept",
+        "huit",
+        "neuf",
+        "dix",
+        "cent",
+        "mille",
+        "million",
+        "milliard"
+      ]
+    }
+  },
+  "patterns": {
+    "percent": "^[\\u0660-\\u0669\\d][\\u0660-\\u0669\\d.,٫]*(%|٪)$",
+    "number": "^[\\u0660-\\u0669\\d][\\u0660-\\u0669\\d.,٫٬%]*[kKmMbB%$€£]?$",
+    "url": "(https?:\\/\\/|www\\.|@[A-Za-z0-9_.]{2,}|[A-Za-z0-9-]+\\.(com|io|ai|dev|app|net|org|co|tn|fr)\\b)",
+    "capsOrMixedCase": "^(?:[A-Z]{2,}|[a-z]+[A-Z][A-Za-z]*)$",
+    "enumerationMinCommaItems": 3
+  },
+  "pacing": {
+    "_note": "Digital jump cuts: punch-in scale changes at pauses/sentence ends. Footage is never cut, only reframed. Measured on refs: shot median ~3.7-4.6 s, min ~1.8 s, max ~8 s; 2.1-2.5 cuts per 10 s.",
+    "silence": {
+      "_note": "Silence-only cuts (owner brief): pauses longer than minPauseMs are shortened to keepGapMs. Words are never cut: every word keeps marginFrames of safety on both sides. Audio crossfades hide the cuts.",
+      "enabled": false,
+      "minPauseMs": 350,
+      "keepGapMs": 125,
+      "marginFrames": 2,
+      "crossfadeFrames": 2,
+      "noiseDb": -34,
+      "cutPunchMinGapMs": 1200
+    },
+    "kenBurnsPerShot": true,
+    "targetShotMs": 4100,
+    "minShotMs": 1800,
+    "maxShotMs": 8000,
+    "snapWindowMs": 700,
+    "punchInScales": [
+      1,
+      1.12,
+      1.06,
+      1.16
+    ],
+    "punchOrigin": {
+      "x": 0.5,
+      "y": 0.35
+    },
+    "hookFirstShotMs": 2200,
+    "ending": {
+      "fullLayoutOnCta": true,
+      "fullLayoutMs": 8000,
+      "minVideoMs": 15000
+    },
+    "layoutAlternation": {
+      "enabled": true,
+      "headOnlyBeats": true
+    }
+  },
+  "transitions": {
+    "graphicSwap": {
+      "type": "blurFade",
+      "outMs": 133,
+      "gapMs": 100,
+      "inMs": 200
+    },
+    "swapRotation": [
+      "blurFade",
+      "zoomBlur",
+      "slideUp"
+    ],
+    "flash": {
+      "ms": 140,
+      "alpha": 0.8,
+      "role": "text"
+    },
+    "layoutChange": {
+      "type": "expand",
+      "ms": 330
+    },
+    "hookExit": {
+      "type": "wipe",
+      "ms": 330,
+      "angleDeg": 22,
+      "fillRole": "accent"
+    },
+    "headCut": {
+      "type": "hardPunchIn",
+      "ms": 0
+    },
+    "usage": {
+      "graphicSwap": "between consecutive visuals in the graphic zone",
+      "layoutChange": "card/split <-> full-screen head, at a pause",
+      "hookExit": "end of hook title only",
+      "headCut": "at phrase boundaries every ~3.7 s"
+    }
+  },
+  "sound": {
+    "_note": "References contain no music bed (silence between words reaches digital silence in 2 of 3) and very quiet UI ticks at graphic swaps plus one bright 'ding' at the hook. Sounds are SYNTHESISED by scripts/make-sfx.mjs from the parameters below, never copied from references.",
+    "targetLufs": -14,
+    "truePeakDb": -1.5,
+    "voiceGainDb": 0,
+    "music": {
+      "_note": "Neither reference batch contains a detectable music bed (spectrograms show speech + room hum only, ElevenLabs tagged no audio events). The bed below is an ORIGINAL synthesised ambient loop (scripts/make-music.mjs) added as an enhancement requested by the owner. Disable with sound.music.enabled=false or --music off.",
+      "enabled": true,
+      "source": "library",
+      "library": {
+        "personal": "music-lofi-chill-loop",
+        "personalClassic": "music-lofi-chill-loop",
+        "tawelti": "music-cozy-acoustic",
+        "tech": "music-lofi-chill-loop"
+      },
+      "gainDbRelVoice": -23,
+      "duckDbDuringSpeech": -9,
+      "duckAttackMs": 120,
+      "duckReleaseMs": 450,
+      "fadeInMs": 700,
+      "fadeOutMs": 1400,
+      "endSwellMs": 2200,
+      "swellOnHookMs": 900,
+      "swellDb": 4,
+      "fileGlob": "music.*",
+      "generator": {
+        "personal": {
+          "bpm": 92,
+          "tonicHz": 110,
+          "chords": [
+            {
+              "root": 0,
+              "tones": [
+                0,
+                3,
+                7,
+                10
+              ]
+            },
+            {
+              "root": -4,
+              "tones": [
+                0,
+                4,
+                7,
+                11
+              ]
+            },
+            {
+              "root": 3,
+              "tones": [
+                0,
+                4,
+                7,
+                11
+              ]
+            },
+            {
+              "root": -2,
+              "tones": [
+                0,
+                4,
+                7,
+                10
+              ]
+            }
+          ],
+          "barsPerChord": 2,
+          "padAttackMs": 900,
+          "padReleaseMs": 900,
+          "lowpassHz": 1500,
+          "detuneCents": 8,
+          "padGain": 0.55,
+          "bassGain": 0.5,
+          "kick": {
+            "enabled": true,
+            "gain": 0.55,
+            "freqStartHz": 120,
+            "freqEndHz": 46,
+            "ms": 170
+          },
+          "hat": {
+            "enabled": true,
+            "gain": 0.12,
+            "ms": 28,
+            "everyBeats": 0.5
+          },
+          "arp": {
+            "enabled": true,
+            "gain": 0.16,
+            "everyBeats": 0.5,
+            "octave": 1,
+            "decayMs": 260
+          }
+        },
+        "tawelti": {
+          "bpm": 84,
+          "tonicHz": 98,
+          "chords": [
+            {
+              "root": 0,
+              "tones": [
+                0,
+                4,
+                7,
+                11
+              ]
+            },
+            {
+              "root": -3,
+              "tones": [
+                0,
+                3,
+                7,
+                10
+              ]
+            },
+            {
+              "root": 5,
+              "tones": [
+                0,
+                4,
+                7,
+                11
+              ]
+            },
+            {
+              "root": 7,
+              "tones": [
+                0,
+                4,
+                7,
+                10
+              ]
+            }
+          ],
+          "barsPerChord": 2,
+          "padAttackMs": 1100,
+          "padReleaseMs": 1000,
+          "lowpassHz": 2100,
+          "detuneCents": 6,
+          "padGain": 0.6,
+          "bassGain": 0.45,
+          "kick": {
+            "enabled": false,
+            "gain": 0.4,
+            "freqStartHz": 110,
+            "freqEndHz": 50,
+            "ms": 160
+          },
+          "hat": {
+            "enabled": true,
+            "gain": 0.09,
+            "ms": 24,
+            "everyBeats": 1
+          },
+          "arp": {
+            "enabled": true,
+            "gain": 0.2,
+            "everyBeats": 1,
+            "octave": 2,
+            "decayMs": 420
+          }
+        }
+      }
+    },
+    "library": {
+      "_note": "Real CC0 samples (assets/cc0, see THIRD_PARTY.md) replace the synthesised fallback of the same name when 'file' exists. gainDb is relative to the voice. tailMs plays only the end of a long riser.",
+      "tick": {
+        "file": "click-soft",
+        "durationMs": 91,
+        "gainDb": -9
+      },
+      "click": {
+        "file": "click-sharp",
+        "durationMs": 22,
+        "gainDb": -8
+      },
+      "ding": {
+        "file": "bell-ding",
+        "durationMs": 619,
+        "gainDb": -14
+      },
+      "whoosh": {
+        "file": "whoosh-medium-1s",
+        "durationMs": 1000,
+        "gainDb": -13
+      },
+      "swish": {
+        "file": "whoosh-short",
+        "durationMs": 350,
+        "gainDb": -13
+      },
+      "riser": {
+        "file": "riser-short-2s",
+        "durationMs": 2000,
+        "tailMs": 700,
+        "gainDb": -13
+      },
+      "hit": {
+        "file": "impact-soft-2",
+        "durationMs": 569,
+        "gainDb": -12
+      },
+      "typing": {
+        "file": "keyboard-typing-1s",
+        "durationMs": 1000,
+        "gainDb": -17
+      },
+      "pop": {
+        "file": "pop-1",
+        "durationMs": 188,
+        "gainDb": -10
+      },
+      "check": {
+        "file": "check-mark",
+        "durationMs": 265,
+        "gainDb": -12
+      },
+      "chime": {
+        "file": "success-chime",
+        "durationMs": 1405,
+        "gainDb": -16
+      },
+      "select": {
+        "file": "select-1",
+        "durationMs": 250,
+        "gainDb": -12
+      },
+      "expand": {
+        "file": "panel-expand",
+        "durationMs": 404,
+        "gainDb": -13
+      },
+      "collapse": {
+        "file": "panel-collapse",
+        "durationMs": 418,
+        "gainDb": -13
+      },
+      "slide": {
+        "file": "slide-1",
+        "durationMs": 601,
+        "gainDb": -15
+      },
+      "appear": {
+        "file": "appear",
+        "durationMs": 258,
+        "gainDb": -12
+      }
+    },
+    "sfx": {
+      "tick": {
+        "type": "tone",
+        "freqHz": 1500,
+        "durationMs": 45,
+        "attackMs": 2,
+        "decayMs": 40,
+        "gainDb": -26,
+        "harmonics": [
+          1,
+          2.2
+        ]
+      },
+      "click": {
+        "type": "tone",
+        "freqHz": 2300,
+        "durationMs": 22,
+        "attackMs": 1,
+        "decayMs": 20,
+        "gainDb": -27,
+        "harmonics": [
+          1,
+          3.1
+        ]
+      },
+      "ding": {
+        "type": "tone",
+        "freqHz": 3000,
+        "durationMs": 420,
+        "attackMs": 3,
+        "decayMs": 380,
+        "gainDb": -20,
+        "harmonics": [
+          1,
+          1.66,
+          2.67
+        ]
+      },
+      "whoosh": {
+        "type": "noise",
+        "durationMs": 360,
+        "attackMs": 120,
+        "decayMs": 240,
+        "gainDb": -24,
+        "lowHz": 400,
+        "highHz": 7000
+      },
+      "swish": {
+        "type": "noise",
+        "durationMs": 230,
+        "attackMs": 60,
+        "decayMs": 160,
+        "gainDb": -25,
+        "lowHz": 1400,
+        "highHz": 9500
+      },
+      "riser": {
+        "type": "riser",
+        "durationMs": 700,
+        "attackMs": 500,
+        "decayMs": 120,
+        "gainDb": -25,
+        "lowHz": 300,
+        "highHzStart": 800,
+        "highHzEnd": 7500
+      },
+      "hit": {
+        "type": "hit",
+        "durationMs": 320,
+        "attackMs": 2,
+        "decayMs": 300,
+        "gainDb": -21,
+        "freqStartHz": 130,
+        "freqEndHz": 42,
+        "noiseMix": 0.35
+      },
+      "typing": {
+        "type": "ticks",
+        "durationMs": 1200,
+        "intervalMs": 72,
+        "freqHz": 1900,
+        "tickMs": 14,
+        "gainDb": -29,
+        "jitter": 0.35
+      },
+      "pop": {
+        "type": "sweep",
+        "freqStartHz": 650,
+        "freqEndHz": 220,
+        "durationMs": 90,
+        "attackMs": 2,
+        "decayMs": 80,
+        "gainDb": -24
+      },
+      "check": {
+        "type": "tone",
+        "freqHz": 1760,
+        "durationMs": 180,
+        "attackMs": 2,
+        "decayMs": 160,
+        "gainDb": -24,
+        "harmonics": [
+          1,
+          1.5
+        ]
+      },
+      "chime": {
+        "type": "tone",
+        "freqHz": 2093,
+        "durationMs": 600,
+        "attackMs": 3,
+        "decayMs": 560,
+        "gainDb": -22,
+        "harmonics": [
+          1,
+          1.5,
+          2
+        ]
+      },
+      "select": {
+        "type": "tone",
+        "freqHz": 1200,
+        "durationMs": 120,
+        "attackMs": 2,
+        "decayMs": 100,
+        "gainDb": -25,
+        "harmonics": [
+          1,
+          2
+        ]
+      },
+      "expand": {
+        "type": "noise",
+        "durationMs": 300,
+        "attackMs": 80,
+        "decayMs": 200,
+        "gainDb": -25,
+        "lowHz": 600,
+        "highHz": 5000
+      },
+      "collapse": {
+        "type": "noise",
+        "durationMs": 300,
+        "attackMs": 40,
+        "decayMs": 240,
+        "gainDb": -25,
+        "lowHz": 400,
+        "highHz": 4000
+      },
+      "slide": {
+        "type": "noise",
+        "durationMs": 400,
+        "attackMs": 100,
+        "decayMs": 260,
+        "gainDb": -26,
+        "lowHz": 800,
+        "highHz": 6000
+      },
+      "appear": {
+        "type": "sweep",
+        "freqStartHz": 400,
+        "freqEndHz": 900,
+        "durationMs": 140,
+        "attackMs": 3,
+        "decayMs": 120,
+        "gainDb": -25
+      },
+      "thud": {
+        "type": "hit",
+        "durationMs": 260,
+        "attackMs": 2,
+        "decayMs": 240,
+        "gainDb": -22,
+        "freqStartHz": 110,
+        "freqEndHz": 48,
+        "noiseMix": 0.5
+      },
+      "stamp": {
+        "type": "hit",
+        "durationMs": 300,
+        "attackMs": 2,
+        "decayMs": 280,
+        "gainDb": -19,
+        "freqStartHz": 150,
+        "freqEndHz": 52,
+        "noiseMix": 0.7
+      },
+      "snip": {
+        "type": "tone",
+        "durationMs": 70,
+        "freqHz": 4200,
+        "attackMs": 1,
+        "decayMs": 60,
+        "gainDb": -22,
+        "harmonics": [
+          1,
+          1.45,
+          2.3
+        ]
+      },
+      "keys": {
+        "type": "ticks",
+        "durationMs": 1100,
+        "intervalMs": 75,
+        "freqHz": 2100,
+        "tickMs": 12,
+        "gainDb": -26,
+        "jitter": 0.4
+      },
+      "sigh": {
+        "type": "noise",
+        "durationMs": 900,
+        "attackMs": 350,
+        "decayMs": 500,
+        "gainDb": -27,
+        "lowHz": 200,
+        "highHz": 1600
+      },
+      "popWords": {
+        "type": "sweep",
+        "freqStartHz": 720,
+        "freqEndHz": 260,
+        "durationMs": 80,
+        "attackMs": 2,
+        "decayMs": 70,
+        "gainDb": -24
+      }
+    },
+    "rules": [
+      {
+        "on": "graphicEnter",
+        "sfx": "$variant",
+        "offsetMs": 0
+      },
+      {
+        "on": "hookTitle",
+        "sfx": "riser",
+        "offsetMs": 0
+      },
+      {
+        "on": "hookTitle",
+        "sfx": "ding",
+        "offsetMs": 650
+      },
+      {
+        "on": "hookExit",
+        "sfx": "whoosh",
+        "offsetMs": -120
+      },
+      {
+        "on": "layoutExpand",
+        "sfx": "expand",
+        "offsetMs": -40
+      },
+      {
+        "on": "layoutCollapse",
+        "sfx": "collapse",
+        "offsetMs": -40
+      },
+      {
+        "on": "sectionTitle",
+        "sfx": "riser",
+        "offsetMs": -600
+      },
+      {
+        "on": "sectionTitle",
+        "sfx": "hit",
+        "offsetMs": 0
+      },
+      {
+        "on": "sectionTitle",
+        "sfx": "typing",
+        "offsetMs": 120
+      },
+      {
+        "on": "checklistItem",
+        "sfx": "check",
+        "offsetMs": 0
+      },
+      {
+        "on": "stepBadge",
+        "sfx": "select",
+        "offsetMs": 0
+      },
+      {
+        "on": "percentRing",
+        "sfx": "chime",
+        "offsetMs": 450
+      },
+      {
+        "on": "keyPhrase",
+        "sfx": "appear",
+        "offsetMs": 0
+      },
+      {
+        "on": "ctaEnter",
+        "sfx": "pop",
+        "offsetMs": 0
+      }
+    ],
+    "maxSfxPerMinute": 40,
+    "storyMusic": {
+      "enabled": true,
+      "source": "generated"
+    }
+  },
+  "transcription": {
+    "engine": "elevenlabs",
+    "fallbackEngine": "whisper",
+    "unsureConfidence": 0.6,
+    "punctuation": {
+      "_note": "Recogniser clean-up: wide/CJK marks become ASCII, and Arabic marks that follow a Latin-script word become the Latin mark (English spoken inside Arabic speech).",
+      "map": {
+        "。": ".",
+        "，": ",",
+        "？": "?",
+        "！": "!",
+        "；": ";",
+        "：": ":"
+      },
+      "arabicAfterLatin": {
+        "،": ",",
+        "؟": "?",
+        "؛": ";"
+      }
+    },
+    "languageAliases": {
+      "ara": "ar",
+      "arb": "ar",
+      "eng": "en",
+      "fra": "fr",
+      "fre": "fr"
+    },
+    "providers": {
+      "elevenlabs": {
+        "endpoint": "https://api.elevenlabs.io/v1/speech-to-text",
+        "modelId": "scribe_v2",
+        "apiKeyEnv": "ELEVENLABS_API_KEY",
+        "timestampsGranularity": "word",
+        "diarize": false,
+        "tagAudioEvents": false
+      }
+    },
+    "version": "1.5.5",
+    "model": "small",
+    "fallbackModels": [
+      "base",
+      "base.en"
+    ],
+    "folder": "whisper.cpp",
+    "defaultLanguage": "auto",
+    "tokenLevelTimestamps": true,
+    "scriptMode": {
+      "wordsPerSecond": 2.7,
+      "pauseAfterSentenceMs": 350
+    }
+  },
+  "motion": {
+    "float": {
+      "ampPctShort": 0.006,
+      "periodMs": 4600
+    },
+    "kenBurns": {
+      "maxScale": 0.035,
+      "driftXPctShort": 0.012
+    },
+    "shimmer": {
+      "periodMs": 3200,
+      "widthPct": 0.35
+    },
+    "borderSpin": {
+      "degPerSec": 70
+    },
+    "pulse": {
+      "bpmFallback": 90,
+      "amount": 0.18
+    },
+    "wordPop": {
+      "ms": 170,
+      "easing": "outBack"
+    }
+  },
+  "stage": {
+    "aurora": {
+      "blobs": [
+        {
+          "role": "accent2",
+          "sizePctShort": 1.05,
+          "alpha": 0.5,
+          "periodMs": 19000,
+          "ax": 0.28,
+          "ay": 0.16,
+          "cx": 0.2,
+          "cy": 0.22,
+          "phase": 0
+        },
+        {
+          "role": "accent3",
+          "sizePctShort": 0.85,
+          "alpha": 0.32,
+          "periodMs": 23000,
+          "ax": 0.3,
+          "ay": 0.2,
+          "cx": 0.85,
+          "cy": 0.42,
+          "phase": 2.1
+        },
+        {
+          "role": "shape",
+          "sizePctShort": 1.2,
+          "alpha": 0.9,
+          "periodMs": 29000,
+          "ax": 0.22,
+          "ay": 0.12,
+          "cx": 0.5,
+          "cy": 0.85,
+          "phase": 4.2
+        },
+        {
+          "role": "accent",
+          "sizePctShort": 0.5,
+          "alpha": 0.13,
+          "periodMs": 17000,
+          "ax": 0.34,
+          "ay": 0.12,
+          "cx": 0.7,
+          "cy": 0.12,
+          "phase": 1.1
+        }
+      ],
+      "blurPctShort": 0.16,
+      "particles": {
+        "count": 34,
+        "sizePctShort": [
+          0.003,
+          0.0085
+        ],
+        "speedPctShortPerSec": [
+          0.012,
+          0.04
+        ],
+        "alpha": 0.55,
+        "twinkleMs": 2600,
+        "roles": [
+          "text",
+          "accent3",
+          "accent"
+        ],
+        "seed": 7
+      },
+      "grid": {
+        "driftPctShortPerSec": 0.012
+      },
+      "vignette": {
+        "alpha": 0.55
+      },
+      "beam": {
+        "enabled": true,
+        "role": "accent3",
+        "alpha": 0.07,
+        "periodMs": 12000,
+        "widthPct": 0.28,
+        "angleDeg": 18
+      }
+    },
+    "arcsDrift": {
+      "ampPctShort": 0.04,
+      "periodMs": 14000
+    },
+    "backdrop": {
+      "blurPctShort": 0.035,
+      "brightness": 0.42,
+      "scale": 1.14
+    },
+    "dotGrid": {
+      "spacingPctShort": 0.04,
+      "radiusPctShort": 0.0022
+    },
+    "glow": {
+      "radiusPctShort": 0.9,
+      "cx": 0.5,
+      "cy": 0.2
+    },
+    "arcs": {
+      "count": 3,
+      "sizesPctShort": [
+        0.9,
+        0.6,
+        0.35
+      ]
+    },
+    "gradient": {
+      "stops": [
+        "backgroundAlt",
+        "background"
+      ]
+    }
+  },
+  "panel": {
+    "paddingPctShort": 0.04,
+    "titleSizePctShort": 0.034
+  },
+  "icons": {
+    "strokePctShort": 0.006
+  },
+  "story": {
+    "_note": "Animated short story (scripts/story.mjs). Everything the film needs besides drawing coordinates (art.tsx): colors are palette roles, times come from cues = words found in the transcript, text is story copy. No em dashes anywhere.",
+    "designSize": 1080,
+    "durationTailMs": 80,
+    "maxDurationMs": 32000,
+    "minDurationMs": 28000,
+    "ink": {
+      "widthDesign": 9,
+      "wobbleDesign": 2.4,
+      "boilFps": 10,
+      "role": "background",
+      "grain": {
+        "size": 180,
+        "alpha": 0.07,
+        "jitterPx": 9,
+        "dots": 900
+      }
+    },
+    "layout": {
+      "portrait": {
+        "stageCy": 0.42,
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.795,
+          "maxW": 0.9
+        }
+      },
+      "landscape": {
+        "stageCy": 0.5,
+        "caption": {
+          "cx": 0.5,
+          "cy": 0.905,
+          "maxW": 0.62
+        }
+      }
+    },
+    "sizes": {
+      "terminal": 34,
+      "stamp": 58,
+      "endTitle": 84,
+      "endSub": 54,
+      "label": 30,
+      "clockNumber": 30,
+      "handle": 40
+    },
+    "script": [
+      "It's 2 AM. Sami has six hours of raw footage and a deadline.",
+      "Cut the silence, add captions, find the music, fix the timing.",
+      "So Sami opens a terminal and types one sentence: edit my video.",
+      "And something wakes up.",
+      "It trims every pause. It writes every caption, word by word. It adds motion graphics, sound effects and soft music.",
+      "Minutes later, the video is done.",
+      "Claude can now edit your videos for you.",
+      "You bring the story. It does the cutting."
+    ],
+    "texts": {
+      "command": "edit my video",
+      "deadline": "DEADLINE",
+      "prompt": ">",
+      "endLine1": "Claude can now edit your videos.",
+      "endLine2": "You bring the story.",
+      "handle": "",
+      "terminalTitle": "terminal",
+      "trackLabels": [
+        "video",
+        "captions",
+        "voice",
+        "music"
+      ],
+      "clockCalm": [
+        2,
+        14
+      ],
+      "clockRush": [
+        2,
+        0
+      ]
+    },
+    "cues": [
+      {
+        "id": "start",
+        "atMs": 0
+      },
+      {
+        "id": "footage",
+        "word": "footage"
+      },
+      {
+        "id": "deadline",
+        "word": "deadline"
+      },
+      {
+        "id": "cut",
+        "word": "cut"
+      },
+      {
+        "id": "silence",
+        "word": "silence"
+      },
+      {
+        "id": "add",
+        "word": "add"
+      },
+      {
+        "id": "captions",
+        "word": "captions"
+      },
+      {
+        "id": "find",
+        "word": "find"
+      },
+      {
+        "id": "music1",
+        "word": "music",
+        "n": 1
+      },
+      {
+        "id": "fix",
+        "word": "fix"
+      },
+      {
+        "id": "timing",
+        "word": "timing"
+      },
+      {
+        "id": "so",
+        "word": "so"
+      },
+      {
+        "id": "opens",
+        "word": "opens"
+      },
+      {
+        "id": "terminal",
+        "word": "terminal"
+      },
+      {
+        "id": "types",
+        "word": "types"
+      },
+      {
+        "id": "sentence",
+        "word": "sentence"
+      },
+      {
+        "id": "edit1",
+        "word": "edit",
+        "n": 1
+      },
+      {
+        "id": "video1",
+        "word": "video",
+        "n": 1
+      },
+      {
+        "id": "something",
+        "word": "something"
+      },
+      {
+        "id": "wakes",
+        "word": "wakes"
+      },
+      {
+        "id": "up",
+        "word": "up"
+      },
+      {
+        "id": "trims",
+        "word": "trims"
+      },
+      {
+        "id": "pause",
+        "word": "pause"
+      },
+      {
+        "id": "writes",
+        "word": "writes"
+      },
+      {
+        "id": "caption",
+        "word": "caption"
+      },
+      {
+        "id": "word1",
+        "word": "word",
+        "n": 1
+      },
+      {
+        "id": "word2",
+        "word": "word",
+        "n": 2
+      },
+      {
+        "id": "adds",
+        "word": "adds"
+      },
+      {
+        "id": "motion",
+        "word": "motion"
+      },
+      {
+        "id": "graphics",
+        "word": "graphics"
+      },
+      {
+        "id": "sound",
+        "word": "sound"
+      },
+      {
+        "id": "effects",
+        "word": "effects"
+      },
+      {
+        "id": "soft",
+        "word": "soft"
+      },
+      {
+        "id": "music2",
+        "word": "music",
+        "n": 2
+      },
+      {
+        "id": "minutes",
+        "word": "minutes"
+      },
+      {
+        "id": "video2",
+        "word": "video",
+        "n": 2
+      },
+      {
+        "id": "done",
+        "word": "done"
+      },
+      {
+        "id": "claude",
+        "word": "claude"
+      },
+      {
+        "id": "edit2",
+        "word": "edit",
+        "n": 2
+      },
+      {
+        "id": "bring",
+        "word": "bring"
+      },
+      {
+        "id": "story",
+        "word": "story"
+      },
+      {
+        "id": "cutting",
+        "word": "cutting"
+      },
+      {
+        "id": "end",
+        "endMs": 0
+      }
+    ],
+    "shots": [
+      {
+        "id": "room",
+        "from": "start",
+        "to": "cut",
+        "bg": "backgroundAlt",
+        "camera": {
+          "from": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "to": {
+            "s": 1.14,
+            "x": 540,
+            "y": 470
+          },
+          "easing": "inOutCubic"
+        }
+      },
+      {
+        "id": "pain",
+        "from": "cut",
+        "to": "so",
+        "bg": "background",
+        "camera": {
+          "from": {
+            "s": 1.04,
+            "x": 540,
+            "y": 500
+          },
+          "to": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "easing": "inOutCubic"
+        }
+      },
+      {
+        "id": "terminal",
+        "from": "so",
+        "to": "trims",
+        "bg": "background",
+        "camera": {
+          "from": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "to": {
+            "s": 1.12,
+            "x": 540,
+            "y": 480
+          },
+          "easing": "inOutCubic"
+        }
+      },
+      {
+        "id": "snip",
+        "from": "trims",
+        "to": "writes",
+        "bg": "backgroundAlt",
+        "camera": {
+          "from": {
+            "s": 1.05,
+            "x": 540,
+            "y": 500
+          },
+          "to": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "easing": "outCubic"
+        }
+      },
+      {
+        "id": "write",
+        "from": "writes",
+        "to": "adds",
+        "bg": "background",
+        "camera": {
+          "from": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "to": {
+            "s": 1.04,
+            "x": 540,
+            "y": 510
+          },
+          "easing": "inOutCubic"
+        }
+      },
+      {
+        "id": "fx",
+        "from": "adds",
+        "to": "minutes",
+        "bg": "backgroundAlt",
+        "camera": {
+          "from": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "to": {
+            "s": 1.03,
+            "x": 540,
+            "y": 520
+          },
+          "easing": "inOutCubic"
+        }
+      },
+      {
+        "id": "payoff",
+        "from": "minutes",
+        "to": "claude",
+        "bg": "surfaceAlt",
+        "camera": {
+          "from": {
+            "s": 1.1,
+            "x": 560,
+            "y": 500
+          },
+          "to": {
+            "s": 1,
+            "x": 540,
+            "y": 520
+          },
+          "easing": "outCubic"
+        }
+      },
+      {
+        "id": "end",
+        "from": "claude",
+        "to": "end",
+        "bg": "background",
+        "camera": {
+          "from": {
+            "s": 1,
+            "x": 540,
+            "y": 540
+          },
+          "to": {
+            "s": 1,
+            "x": 540,
+            "y": 540
+          },
+          "easing": "linear"
+        }
+      }
+    ],
+    "transitions": {
+      "swoosh": {
+        "ms": 420,
+        "role": "accent",
+        "angleDeg": 18
+      },
+      "snip": {
+        "ms": 360,
+        "role": "accent3"
+      },
+      "flip": {
+        "ms": 420,
+        "role": "accent2"
+      }
+    },
+    "boundaries": [
+      {
+        "at": "cut",
+        "type": "swoosh"
+      },
+      {
+        "at": "so",
+        "type": "swoosh"
+      },
+      {
+        "at": "trims",
+        "type": "swoosh"
+      },
+      {
+        "at": "writes",
+        "type": "snip"
+      },
+      {
+        "at": "adds",
+        "type": "flip"
+      },
+      {
+        "at": "minutes",
+        "type": "swoosh"
+      },
+      {
+        "at": "claude",
+        "type": "flip"
+      }
+    ],
+    "emotions": {
+      "tired": {
+        "lid": 0.55,
+        "browAngle": -0.35,
+        "browRaise": 6,
+        "mouthCurve": -0.25,
+        "mouthOpen": 0,
+        "sweat": 0,
+        "bags": 1,
+        "gaze": [
+          0,
+          0.2
+        ]
+      },
+      "panicked": {
+        "lid": -0.15,
+        "browAngle": 0.55,
+        "browRaise": -14,
+        "mouthCurve": -0.5,
+        "mouthOpen": 0.9,
+        "sweat": 1,
+        "bags": 0.4,
+        "gaze": [
+          0,
+          0
+        ]
+      },
+      "curious": {
+        "lid": 0.12,
+        "browAngle": 0.2,
+        "browRaise": -6,
+        "mouthCurve": 0.1,
+        "mouthOpen": 0.25,
+        "sweat": 0,
+        "bags": 0.5,
+        "gaze": [
+          0.5,
+          0.2
+        ]
+      },
+      "amazed": {
+        "lid": -0.25,
+        "browAngle": 0.1,
+        "browRaise": -20,
+        "mouthCurve": 0.2,
+        "mouthOpen": 1,
+        "sweat": 0,
+        "bags": 0,
+        "gaze": [
+          -0.3,
+          0.4
+        ]
+      },
+      "relieved": {
+        "lid": 0.5,
+        "browAngle": -0.15,
+        "browRaise": 4,
+        "mouthCurve": 0.8,
+        "mouthOpen": 0,
+        "sweat": 0,
+        "bags": 0,
+        "gaze": [
+          0,
+          0
+        ]
+      },
+      "asleep": {
+        "lid": 1,
+        "browAngle": -0.1,
+        "browRaise": 8,
+        "mouthCurve": 0.35,
+        "mouthOpen": 0,
+        "sweat": 0,
+        "bags": 0,
+        "gaze": [
+          0,
+          0
+        ]
+      }
+    },
+    "emotionBlendMs": 320,
+    "emotionTrack": [
+      {
+        "cue": "start",
+        "emotion": "tired"
+      },
+      {
+        "cue": "deadline",
+        "emotion": "panicked"
+      },
+      {
+        "cue": "silence",
+        "emotion": "curious"
+      },
+      {
+        "cue": "add",
+        "emotion": "panicked"
+      },
+      {
+        "cue": "so",
+        "emotion": "tired"
+      },
+      {
+        "cue": "terminal",
+        "emotion": "curious"
+      },
+      {
+        "cue": "wakes",
+        "emotion": "amazed"
+      },
+      {
+        "cue": "adds",
+        "emotion": "amazed"
+      },
+      {
+        "cue": "minutes",
+        "emotion": "relieved"
+      },
+      {
+        "cue": "story",
+        "emotion": "asleep"
+      }
+    ],
+    "sfxEvents": [
+      {
+        "cue": "start",
+        "sfx": "tick",
+        "every": 1000,
+        "until": "cut"
+      },
+      {
+        "cue": "footage",
+        "sfx": "thud",
+        "offsetMs": 0
+      },
+      {
+        "cue": "deadline",
+        "sfx": "stamp",
+        "offsetMs": 0
+      },
+      {
+        "cue": "cut",
+        "sfx": "whoosh",
+        "offsetMs": -120
+      },
+      {
+        "cue": "silence",
+        "sfx": "pop",
+        "offsetMs": 0
+      },
+      {
+        "cue": "captions",
+        "sfx": "keys",
+        "offsetMs": 0
+      },
+      {
+        "cue": "music1",
+        "sfx": "whoosh",
+        "offsetMs": 0
+      },
+      {
+        "cue": "timing",
+        "sfx": "tick",
+        "every": 140,
+        "until": "so"
+      },
+      {
+        "cue": "so",
+        "sfx": "whoosh",
+        "offsetMs": -120
+      },
+      {
+        "cue": "opens",
+        "sfx": "pop",
+        "offsetMs": -60
+      },
+      {
+        "cue": "edit1",
+        "sfx": "keys",
+        "offsetMs": 0
+      },
+      {
+        "cue": "something",
+        "sfx": "click",
+        "offsetMs": -260
+      },
+      {
+        "cue": "wakes",
+        "sfx": "chime",
+        "offsetMs": 0
+      },
+      {
+        "cue": "trims",
+        "sfx": "whoosh",
+        "offsetMs": -140
+      },
+      {
+        "cue": "trims",
+        "sfx": "snip",
+        "offsetMs": 0,
+        "repeatMs": [
+          0,
+          330,
+          660
+        ]
+      },
+      {
+        "cue": "writes",
+        "sfx": "swish",
+        "offsetMs": -140
+      },
+      {
+        "cue": "writes",
+        "sfx": "popWords",
+        "fromCue": "writes",
+        "toCue": "word2"
+      },
+      {
+        "cue": "adds",
+        "sfx": "swish",
+        "offsetMs": -140
+      },
+      {
+        "cue": "graphics",
+        "sfx": "pop",
+        "offsetMs": 0
+      },
+      {
+        "cue": "effects",
+        "sfx": "chime",
+        "offsetMs": -80
+      },
+      {
+        "cue": "music2",
+        "sfx": "chime",
+        "offsetMs": 80
+      },
+      {
+        "cue": "minutes",
+        "sfx": "whoosh",
+        "offsetMs": -140
+      },
+      {
+        "cue": "done",
+        "sfx": "chime",
+        "offsetMs": 0
+      },
+      {
+        "cue": "story",
+        "sfx": "sigh",
+        "offsetMs": -200
+      },
+      {
+        "cue": "claude",
+        "sfx": "swish",
+        "offsetMs": -120
+      },
+      {
+        "cue": "bring",
+        "sfx": "pop",
+        "offsetMs": 0
+      }
+    ]
+  },
+  "director": {
+    "_note": "Layout, caption and window-card geometry measured on the two reference videos (REPO, DESIGN). Fractions: x,w of frame width; y,h of frame height. 9:16 is the native format; other ratios reuse the same fractions inside a centered 9:16 safe canvas.",
+    "safeCanvas": {
+      "aspect": [
+        9,
+        16
+      ]
+    },
+    "layouts": {
+      "lightHead": {
+        "stage": "paper",
+        "head": {
+          "x": 0.039,
+          "y": 0.676,
+          "w": 0.922,
+          "h": 0.33,
+          "radius": 0.04,
+          "outline": true,
+          "pop": 0.11,
+          "popObjectY": 0.08
+        },
+        "window": {
+          "x": 0.088,
+          "y": 0.258,
+          "w": 0.825,
+          "h": 0.25
+        },
+        "title": {
+          "line1Y": 0.12,
+          "boxY": 0.188,
+          "boxH": 0.072
+        },
+        "caption": {
+          "cy": 0.552,
+          "maxW": 0.9,
+          "ink": "paperInk"
+        },
+        "tile": {
+          "y": 0.52,
+          "h": 0.1
+        }
+      },
+      "lightSection": {
+        "stage": "white",
+        "head": null,
+        "window": {
+          "x": 0.088,
+          "y": 0.27,
+          "w": 0.825,
+          "h": 0.34
+        },
+        "title": {
+          "line1Y": 0.126,
+          "boxY": 0.194,
+          "boxH": 0.072
+        },
+        "caption": {
+          "cy": 0.74,
+          "maxW": 0.9,
+          "ink": "paperInk"
+        },
+        "tile": {
+          "y": 0.64,
+          "h": 0.1
+        }
+      },
+      "darkDemo": {
+        "stage": "backdrop",
+        "head": null,
+        "window": {
+          "x": 0.088,
+          "y": 0.134,
+          "w": 0.825,
+          "h": 0.352
+        },
+        "windowLarge": {
+          "x": 0.088,
+          "y": 0.134,
+          "w": 0.825,
+          "h": 0.53
+        },
+        "title": null,
+        "caption": {
+          "cy": 0.734,
+          "maxW": 0.9,
+          "ink": "dimInk"
+        },
+        "tile": {
+          "y": 0.5,
+          "h": 0.135
+        }
+      },
+      "fullHead": {
+        "stage": "backdrop",
+        "head": {
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0,
+          "outline": false
+        },
+        "window": {
+          "x": 0.088,
+          "y": 0.62,
+          "w": 0.825,
+          "h": 0.12
+        },
+        "title": null,
+        "caption": {
+          "cy": 0.7,
+          "maxW": 0.9,
+          "ink": "dimInk"
+        },
+        "tile": {
+          "y": 0.62,
+          "h": 0.1
+        }
+      },
+      "techHead": {
+        "stage": "tech",
+        "head": {
+          "x": 0,
+          "y": 0,
+          "w": 1,
+          "h": 1,
+          "radius": 0,
+          "outline": false
+        },
+        "window": {
+          "x": 0.03,
+          "y": 0.62,
+          "w": 0.94,
+          "h": 0.12
+        },
+        "title": null,
+        "caption": {
+          "cy": 0.7,
+          "maxW": 0.92,
+          "ink": "text",
+          "scale": 1.15,
+          "karaoke": false,
+          "entitySerif": false
+        },
+        "slots": {
+          "top": {
+            "x": 0.05,
+            "y": 0.07,
+            "w": 0.9,
+            "h": 0.095
+          },
+          "mid": {
+            "x": 0.02,
+            "y": 0.225,
+            "w": 0.96,
+            "h": 0.15
+          },
+          "lower": {
+            "x": 0.06,
+            "y": 0.62,
+            "w": 0.88,
+            "h": 0.1
+          },
+          "full": {
+            "x": 0,
+            "y": 0.25,
+            "w": 1,
+            "h": 0.5
+          }
+        }
+      },
+      "techDemo": {
+        "stage": "tech",
+        "head": null,
+        "window": {
+          "x": 0.04,
+          "y": 0.165,
+          "w": 0.92,
+          "h": 0.42
+        },
+        "windowLarge": {
+          "x": 0.04,
+          "y": 0.165,
+          "w": 0.92,
+          "h": 0.62
+        },
+        "title": null,
+        "caption": {
+          "cy": 0.14,
+          "maxW": 0.92,
+          "ink": "text",
+          "scale": 1.2,
+          "karaoke": false,
+          "entitySerif": false
+        },
+        "tile": {
+          "y": 0.6,
+          "h": 0.1
+        },
+        "slots": {
+          "lower": {
+            "x": 0.06,
+            "y": 0.6,
+            "w": 0.88,
+            "h": 0.22
+          },
+          "stats": {
+            "x": 0.04,
+            "y": 0.64,
+            "w": 0.92,
+            "h": 0.2
+          },
+          "full": {
+            "x": 0,
+            "y": 0.25,
+            "w": 1,
+            "h": 0.5
+          },
+          "main": {
+            "x": 0.04,
+            "y": 0.165,
+            "w": 0.92,
+            "h": 0.42
+          },
+          "phone": {
+            "x": 0.27,
+            "y": 0.17,
+            "w": 0.46,
+            "h": 0.5
+          },
+          "wide": {
+            "x": 0.04,
+            "y": 0.17,
+            "w": 0.92,
+            "h": 0.36
+          }
+        }
+      },
+      "vlog": {
+        "stage": "black",
+        "head": null,
+        "window": {
+          "x": 0.04,
+          "y": 0.17,
+          "w": 0.92,
+          "h": 0.36
+        },
+        "title": null,
+        "caption": {
+          "cy": 0.7,
+          "maxW": 0.9,
+          "ink": "text",
+          "scale": 1.1,
+          "karaoke": false,
+          "entitySerif": false
+        },
+        "slots": {
+          "top": {
+            "x": 0.05,
+            "y": 0.07,
+            "w": 0.9,
+            "h": 0.06
+          },
+          "mid": {
+            "x": 0.02,
+            "y": 0.225,
+            "w": 0.96,
+            "h": 0.15
+          },
+          "lower": {
+            "x": 0.06,
+            "y": 0.58,
+            "w": 0.88,
+            "h": 0.2
+          },
+          "full": {
+            "x": 0,
+            "y": 0.25,
+            "w": 1,
+            "h": 0.5
+          },
+          "main": {
+            "x": 0.04,
+            "y": 0.17,
+            "w": 0.92,
+            "h": 0.42
+          }
+        }
+      }
+    },
+    "window": {
+      "chromeH": 0.04,
+      "urlH": 0.027,
+      "urlW": 0.52,
+      "dotR": 0.0058,
+      "radius": 0.022,
+      "contentPad": 0.03,
+      "badge": {
+        "sizeH": 0.019,
+        "padX": 0.022
+      },
+      "scrollPxPerSec": 0.018,
+      "highlight": {
+        "alpha": 0.32,
+        "ms": 420
+      }
+    },
+    "title": {
+      "line1Size": 0.072,
+      "boxSize": 0.086,
+      "boxPadX": 0.045,
+      "boxRadius": 0.006,
+      "enterMs": 360,
+      "stickerSize": 0.0065
+    },
+    "caption": {
+      "sizeH": 0.041,
+      "maxWords": 3,
+      "revealMs": 140,
+      "shadow": {
+        "blurH": 0.012,
+        "offsetH": 0.003,
+        "alpha": 0.7
+      },
+      "serifScale": 1.1,
+      "gapEm": 0.28
+    },
+    "section": {
+      "line1Size": 0.072,
+      "boxSize": 0.082,
+      "typeCharsPerSec": 16,
+      "holdMs": 2800
+    },
+    "stat": {
+      "sizeH": 0.07,
+      "labelH": 0.022,
+      "padH": 0.025,
+      "radiusH": 0.016
+    },
+    "pill": {
+      "sizeH": 0.019,
+      "padX": 0.02,
+      "padY": 0.012
+    },
+    "stageBg": {
+      "paperTexture": {
+        "dots": 700,
+        "alpha": 0.05,
+        "size": 220
+      },
+      "vignette": 0.55,
+      "backdropBlurH": 0.022,
+      "backdropBrightness": 0.42,
+      "backdropScale": 1.12
+    },
+    "stickers": {
+      "pixel": 7,
+      "gap": 0.012
+    },
+    "transitions": {
+      "windowIn": {
+        "ms": 260,
+        "from": {
+          "opacity": 0,
+          "scale": 0.94,
+          "y": 0.02,
+          "blur": 10
+        }
+      },
+      "windowOut": {
+        "ms": 180,
+        "to": {
+          "opacity": 0,
+          "scale": 0.97,
+          "y": -0.01,
+          "blur": 8
+        }
+      },
+      "layoutMs": 260,
+      "titleIn": {
+        "ms": 320
+      },
+      "fxMs": 260,
+      "kinds": [
+        "whip",
+        "flash",
+        "glitch",
+        "punch",
+        "zoomthrough",
+        "slide"
+      ],
+      "flashAlpha": 0.38,
+      "glitchSlices": 5,
+      "glitchShiftPct": 0.035,
+      "whipBandPct": 0.55,
+      "zoomBoost": 0.09
+    },
+    "pacing": {
+      "graphicHoldMs": 2400,
+      "minGapMs": 160,
+      "headVisibleShare": 0.5,
+      "hookHeadMs": 4500,
+      "endHeadMs": 6500
+    },
+    "sfx": {
+      "windowIn": "swish",
+      "stat": "pop",
+      "badge": "select",
+      "section": "hit",
+      "strike": "snip",
+      "layout": "whoosh",
+      "slam": "hit",
+      "sting": "thud",
+      "pillTick": "tick",
+      "statTick": "tick",
+      "ringDone": "ding",
+      "cta": "pop",
+      "chart": "swish",
+      "place": "pop",
+      "flow": "tick",
+      "split": "swish"
+    },
+    "tech": {
+      "topBar": {
+        "barH": 0.004,
+        "tagY": 0.02,
+        "tagSizeH": 0.0105,
+        "tagTracking": 0.22
+      },
+      "stage": {
+        "gridPx": 0.075,
+        "gridAlpha": 0.07,
+        "glowAlpha": 0.18,
+        "driftPxPerSec": 0.004
+      },
+      "pill": {
+        "heightH": 0.07,
+        "gapH": 0.012,
+        "radius": 0.3,
+        "fillAlpha": 0.08,
+        "borderAlpha": 0.14,
+        "textScale": 0.5,
+        "iconScale": 0.62
+      },
+      "stat": {
+        "sizeH": 0.056,
+        "labelScale": 0.27,
+        "supportScale": 0.3,
+        "glowAlpha": 0.35
+      },
+      "headBlurDemo": 0,
+      "head": {
+        "popH": 0.08
+      }
+    },
+    "zoom": {
+      "rampMs": 240,
+      "holdMaxMs": 3200,
+      "seamScales": [
+        1,
+        1.12,
+        1,
+        1.16
+      ],
+      "emphasisScale": 1.18,
+      "emphasisHoldMs": 1100,
+      "originY": 0.35,
+      "enabled": true
+    },
+    "type": {
+      "slam": {
+        "glowBlurH": 0.035,
+        "glowAlpha": 0.55,
+        "scaleFrom": 1.35
+      },
+      "tabularNumbers": true
+    },
+    "grade": {
+      "tech": {
+        "contrast": 1.07,
+        "saturate": 1.04,
+        "brightness": 1,
+        "tint": "#3B5BFF",
+        "tintAlpha": 0.05,
+        "vignette": 0.35
+      },
+      "personal": {
+        "contrast": 1.04,
+        "saturate": 1.03,
+        "brightness": 1.01,
+        "tint": "#0284FF",
+        "tintAlpha": 0.02,
+        "vignette": 0.12
+      },
+      "vlog": {
+        "contrast": 1.05,
+        "saturate": 1.08,
+        "brightness": 1,
+        "tint": "#FFB347",
+        "tintAlpha": 0.06,
+        "vignette": 0.28
+      }
+    },
+    "tones": {
+      "money": {
+        "accent": "#35D07F"
+      },
+      "warn": {
+        "accent": "#FF4D4D"
+      },
+      "good": {
+        "accent": "#35D07F"
+      },
+      "cool": {
+        "accent": "#5CC8FF"
+      }
+    },
+    "fill": {
+      "enabled": true,
+      "minTitleMs": 1800,
+      "maxSentenceMs": 4200,
+      "minGapMs": 1500,
+      "stickers": [
+        "spark",
+        "star",
+        "bolt",
+        "check"
+      ],
+      "ghost": {
+        "sizeW": 0.27,
+        "alpha": 0.07,
+        "topH": 0.3,
+        "driftW": 0.03,
+        "rotDeg": -5
+      }
+    },
+    "vlog": {
+      "xfMs": 180,
+      "ambientDb": -26,
+      "shotMs": [
+        2200,
+        3600
+      ],
+      "zoom": [
+        1,
+        1.08
+      ],
+      "pan": [
+        0.35,
+        0.65
+      ],
+      "landscapeFit": "cover",
+      "minSpeed": 0.6,
+      "overlayFx": [
+        "whip",
+        "flash",
+        "glitch",
+        "punch",
+        "zoomthrough",
+        "slide"
+      ],
+      "tagStyle": {
+        "sizeH": 0.016,
+        "padX": 0.02
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "edit-style",
+  "private": true,
+  "type": "module",
+  "description": "Scoped so the skill's .js/.mjs files are ES modules without touching the project's package.json."
+}

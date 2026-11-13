@@ -1,0 +1,84 @@
+/* Design tokens. Semantic names only; components never use raw colours.
+   Palette is the editing brand: deep navy surfaces, electric blue for actions, amber for the one thing that is current. */
+:root {
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-num: 'Space Grotesk', 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', monospace;
+  --font-ar: 'IBM Plex Sans Arabic', 'Inter', sans-serif;
+
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 28px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --rail-w: 232px;
+}
+
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #070b18;
+  --surface-1: #0c1226;
+  --surface-2: #121a33;
+  --surface-3: #1a2444;
+  --line: rgba(154, 166, 208, 0.16);
+  --line-strong: rgba(154, 166, 208, 0.3);
+  --text: #eef2ff;
+  --text-2: #a9b3d6;
+  --text-3: #8791b8;
+  --primary: #3b5bff;
+  --primary-hover: #566fff;
+  --on-primary: #ffffff;
+  --accent: #ffd23f;
+  --on-accent: #14172b;
+  --ok: #35d07f;
+  --danger: #ff6b6b;
+  --on-danger: #1a0b0b;
+  --focus: #8fa2ff;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 28px rgba(0, 0, 0, 0.45);
+  --scrim: rgba(3, 6, 16, 0.7);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f3f5fb;
+  --surface-1: #ffffff;
+  --surface-2: #eef1f9;
+  --surface-3: #e2e8f6;
+  --line: rgba(20, 30, 70, 0.12);
+  --line-strong: rgba(20, 30, 70, 0.26);
+  --text: #0b1020;
+  --text-2: #424c6e;
+  --text-3: #5a6485;
+  --primary: #2747e8;
+  --primary-hover: #1c37c4;
+  --on-primary: #ffffff;
+  --accent: #ffd23f;
+  --on-accent: #14172b;
+  --ok: #12804a;
+  --danger: #c62d2d;
+  --on-danger: #ffffff;
+  --focus: #2747e8;
+  --shadow-1: 0 1px 2px rgba(20, 30, 70, 0.1);
+  --shadow-2: 0 8px 28px rgba(20, 30, 70, 0.16);
+  --scrim: rgba(10, 16, 40, 0.45);
+}

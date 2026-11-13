@@ -1,0 +1,174 @@
+{
+  "_readme": "Sound design for every edit. The planner proposes a sound for each visual event; scripts/lib/sfx.mjs then picks the kit that fits the look, keeps the strongest sounds, spreads them out, varies the samples, levels them against the MEASURED voice and fixes their timing. Only CC0 / MIT / Apache-2.0 samples (assets/cc0/THIRD_PARTY.md) are used.",
+  "level": {
+    "peakBelowVoicePeakDb": 8,
+    "neverAboveBelowVoicePeakDb": 6,
+    "_note": "An effect's peak sits peakBelowVoicePeakDb under the voice's measured true peak (plus the type's weightDb and the kit/look gain), and never closer than neverAboveBelowVoicePeakDb: the voice always wins."
+  },
+  "density": {
+    "minimal": {
+      "perMinute": 12,
+      "gapMs": 800,
+      "minPrio": 5,
+      "emphasisGapMs": 0,
+      "_note": "only the strong sounds: hits, whooshes, transitions, pops; no ticks, no emphasis sounds"
+    },
+    "normal": {
+      "perMinute": 26,
+      "gapMs": 500,
+      "minPrio": 0,
+      "emphasisGapMs": 9000
+    },
+    "rich": {
+      "perMinute": 40,
+      "gapMs": 380,
+      "minPrio": 0,
+      "emphasisGapMs": 4500
+    }
+  },
+  "rhythmTypes": [
+    "tick",
+    "click",
+    "check",
+    "typing"
+  ],
+  "rhythmGapMs": 110,
+  "priority": {
+    "hit": 9,
+    "thud": 9,
+    "stamp": 8,
+    "riser": 8,
+    "ding": 8,
+    "chime": 7,
+    "whoosh": 7,
+    "swish": 6,
+    "slide": 6,
+    "pop": 6,
+    "snip": 6,
+    "select": 5,
+    "check": 5,
+    "expand": 5,
+    "collapse": 5,
+    "appear": 5,
+    "tick": 3,
+    "click": 3,
+    "typing": 3
+  },
+  "weightDb": {
+    "tick": -1,
+    "click": -1,
+    "pop": -1,
+    "select": -2,
+    "check": -2,
+    "ding": -4,
+    "chime": -5,
+    "hit": -2,
+    "thud": -2,
+    "stamp": -2,
+    "snip": -2,
+    "appear": -3,
+    "expand": -4,
+    "collapse": -4,
+    "whoosh": -5,
+    "swish": -5,
+    "slide": -5,
+    "riser": -6,
+    "typing": -6
+  },
+  "extraLibrary": {
+    "thud": "dry-thud"
+  },
+  "variants": {
+    "pop": [
+      "pop-2"
+    ],
+    "select": [
+      "select-2"
+    ],
+    "hit": [
+      "impact-soft-1"
+    ],
+    "whoosh": [
+      "whoosh-soft"
+    ],
+    "swish": [
+      "whoosh-soft"
+    ],
+    "tick": [
+      "tick-soft"
+    ],
+    "click": [
+      "click-soft"
+    ]
+  },
+  "emphasis": {
+    "enabled": true,
+    "minGapMs": 9000,
+    "prio": 2,
+    "weightDb": -3
+  },
+  "fxMap": {
+    "whip": "whoosh",
+    "zoomthrough": "whoosh",
+    "flash": "swish",
+    "glitch": "swish",
+    "punch": "thud",
+    "slide": "slide"
+  },
+  "kits": {
+    "tech": {
+      "label": "Crisp and digital: clean clicks, pops and fast swishes",
+      "typeMap": {},
+      "emphasis": "tick",
+      "gainDb": 0
+    },
+    "soft": {
+      "label": "Warm and gentle: soft pops, airy slides, bell-like accents",
+      "typeMap": {
+        "swish": "appear",
+        "whoosh": "slide",
+        "snip": "select",
+        "ding": "chime",
+        "hit": "thud",
+        "stamp": "thud"
+      },
+      "emphasis": "tick",
+      "gainDb": -1
+    },
+    "punchy": {
+      "label": "Energetic: bigger whooshes and hits, tight accents",
+      "typeMap": {
+        "swish": "whoosh",
+        "pop": "select",
+        "snip": "click"
+      },
+      "emphasis": "click",
+      "gainDb": 1
+    },
+    "minimal": {
+      "label": "Few, quiet, tasteful: only the moments that matter",
+      "typeMap": {
+        "swish": "appear",
+        "whoosh": "slide",
+        "snip": "select",
+        "hit": "thud",
+        "ding": "chime",
+        "stamp": "thud"
+      },
+      "emphasis": "tick",
+      "gainDb": -2,
+      "density": "minimal"
+    }
+  },
+  "familyKit": {
+    "tech": "tech",
+    "light": "soft"
+  },
+  "paletteKit": {
+    "tech": "tech",
+    "personal": "soft",
+    "personalClassic": "soft",
+    "tawelti": "soft",
+    "personalAurora": "tech"
+  }
+}

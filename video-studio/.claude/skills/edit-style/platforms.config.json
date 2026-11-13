@@ -1,0 +1,10 @@
+{
+  "_readme": "Where each app draws its own interface over a vertical video. Graphics and captions are kept out of these areas. Values are fractions of the frame, measured from typical 9:16 phone layouts of each app; they are approximations (each app changes its layout now and then), so a margin is included. top / bottom: bands across the full width. right: the column of buttons (like, comment, share) between railTop and railBottom. left: a small side margin.",
+  "default": "all",
+  "platforms": {
+    "tiktok": {"label": "TikTok", "top": 0.09, "bottom": 0.2, "left": 0.04, "right": 0.14, "railTop": 0.4, "railBottom": 0.86},
+    "reels": {"label": "Instagram Reels", "top": 0.09, "bottom": 0.22, "left": 0.04, "right": 0.13, "railTop": 0.48, "railBottom": 0.88},
+    "shorts": {"label": "YouTube Shorts", "top": 0.08, "bottom": 0.17, "left": 0.04, "right": 0.14, "railTop": 0.42, "railBottom": 0.86},
+    "all": {"label": "All three (safest)", "top": 0.09, "bottom": 0.22, "left": 0.04, "right": 0.14, "railTop": 0.4, "railBottom": 0.88}
+  }
+}
