@@ -1,4 +1,26 @@
-export type Mode = 'talking' | 'vlog';
+export type Mode = 'talking' | 'vlog' | 'motion';
+export type MotionLine = {line: string; purpose: string; visual: string};
+export type MotionSettings = {
+  aspect: '9:16' | '16:9';
+  lengthS: number;
+  idea?: string;
+  style?: string;
+  language?: string;
+  reference?: string;
+  notes?: string;
+  understanding?: string;
+  title?: string;
+  scriptLanguage?: string;
+  script?: MotionLine[];
+  captions?: {style: string; colors?: Partial<Record<'text' | 'accent' | 'box', string>>};
+  voiceId?: string;
+  voiceName?: string;
+  voiceModel?: string;
+  voiceSpeed?: number;
+  voiceStability?: number;
+  voice?: {audio: string; wordsFile: string; words: number; durationMs: number; chars: number; at: number; voiceId: string; voiceName: string} | null;
+};
+export type Voice = {id: string; name: string; category: string; gender: string; age: string; accent: string; description: string; useCase: string; previewUrl: string};
 export type Style = 'tech' | 'light';
 export type Role = 'footage' | 'clip' | 'broll' | 'voiceover' | 'music' | 'image' | 'logo' | 'screenshot' | 'transcript' | 'reference';
 
@@ -19,6 +41,7 @@ export interface Project {
   id: string;
   name: string;
   mode: Mode;
+  motion?: MotionSettings;
   style: Style;
   popout: boolean;
   look?: string;
@@ -27,8 +50,8 @@ export interface Project {
   updatedAt: number;
   media: MediaItem[];
   outputs: {file: string; at: number; label: string; lufs?: number; peak?: number}[];
-  settings: {cutSilence: boolean; music: 'on' | 'off'; musicLevel?: 'auto' | 'subtle' | 'balanced' | 'prominent'; musicVolume?: number; sfx?: 'auto' | 'off' | 'minimal' | 'normal' | 'rich'; planBrief?: string; captionStyle?: string; captionColors?: Partial<Record<'text' | 'accent' | 'box' | 'boxText', string>>; platform?: 'all' | 'tiktok' | 'reels' | 'shorts' | 'off'; language: string; stt?: 'elevenlabs' | 'whisper'};
-  status: {prepared?: boolean; planned?: boolean};
+  settings: {cutSilence: boolean; music: 'on' | 'off'; musicLevel?: 'auto' | 'subtle' | 'balanced' | 'prominent'; musicVolume?: number; sfx?: 'auto' | 'off' | 'minimal' | 'normal' | 'rich'; planBrief?: string; agentActive?: boolean; agentReference?: string; agentNotes?: string; captionStyle?: string; captionColors?: Partial<Record<'text' | 'accent' | 'box' | 'boxText', string>>; platform?: 'all' | 'tiktok' | 'reels' | 'shorts' | 'off'; language: string; stt?: 'elevenlabs' | 'whisper'};
+  status: {prepared?: boolean; planned?: boolean; built?: boolean};
 }
 
 export interface Settings {
@@ -112,7 +135,7 @@ export interface RunEvent {
 
 export interface AiEvent {
   runId: string;
-  job: 'plan' | 'edit' | 'look' | 'hook' | 'analyze';
+  job: 'plan' | 'edit' | 'look' | 'hook' | 'analyze' | 'agent' | 'script';
   at: number;
   type: 'start' | 'step' | 'log' | 'writing' | 'usage' | 'end';
   title?: string;
@@ -287,6 +310,8 @@ export interface Reference {
   error?: string;
 }
 
+export type AgentBeat = {id: string; track: string; label: string; startMs: number; endMs: number};
+
 interface Bridge {
   settings: {get(): Promise<Settings>; save(p: Partial<Settings> & {defaults?: Partial<Settings['defaults']>}): Promise<Settings>; secret(name: 'elevenlabs' | 'anthropic', value: string): Promise<Settings>};
   engine: {info(): Promise<EngineInfo>};
@@ -301,11 +326,31 @@ interface Bridge {
     signOut(): Promise<ClaudeStatus>;
     onEvent(cb: (e: {type: string; line?: string; url?: string}) => void): () => void;
   };
-  projects: {list(): Promise<Project[]>; get(id: string): Promise<Project>; create(d: {name: string; mode: Mode; style: Style; popout: boolean; look?: string}): Promise<Project>; save(p: Project): Promise<Project>; remove(id: string): Promise<void>};
+  projects: {list(): Promise<Project[]>; get(id: string): Promise<Project>; create(d: {name: string; mode: Mode; style: Style; popout: boolean; look?: string; motion?: {aspect: '9:16' | '16:9'; lengthS: number}}): Promise<Project>; save(p: Project): Promise<Project>; remove(id: string): Promise<void>};
   media: {pick(kinds?: string[]): Promise<string[]>; attach(id: string, items: {path: string; role: Role}[]): Promise<{project: Project; added: MediaItem[]}>; detach(id: string, mediaId: string): Promise<Project>; poster(file: string): Promise<string | null>; url(file: string): Promise<string>; dir(dir: string): Promise<string>; kind(file: string): Promise<string>; pathOf(f: File): string};
   run: {start(id: string, step: 'prepare' | 'auto' | 'plan' | 'render', opts?: Record<string, unknown>): Promise<{runId: string; out?: string}>; cancel(runId: string): Promise<boolean>; active(): Promise<{runId: string; projectId: string; step: string; stage: string | null}[]>; onEvent(cb: (e: RunEvent) => void): () => void};
   job: {read(id: string): Promise<Job>};
   hook: {read(id: string): Promise<HookResult | null>; analyze(id: string): Promise<HookResult>};
+  motion: {
+    script(id: string): Promise<Project>;
+    voices(): Promise<{voices: Voice[]; subscription: {tier: string; used: number | null; limit: number | null; resetsAt: number | null; error?: string}; models: {id: string; label: string}[]}>;
+    voice(id: string): Promise<Project>;
+    build(id: string, opts?: {notes?: string}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
+  };
+  agent: {
+    build(id: string, opts: {reference: string; notes?: string}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
+    continue(id: string): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
+    check(id: string): Promise<{rounds: number; clean: boolean; interrupted: string | null; canContinue: boolean; previewMissing: boolean} | null>;
+    last(id: string): Promise<{out: string; url: string} | null>;
+    state(id: string): Promise<any>;
+    edit(id: string, instruction: string): Promise<{n: number; summary: string; view: any}>;
+    undo(id: string): Promise<{n: number; view: any}>;
+    render(id: string, opts?: {concurrency?: number}): Promise<{out: string; url: string; view: any}>;
+    use(id: string, on: boolean): Promise<Project>;
+    beats(id: string): Promise<{beats: AgentBeat[]; words: {t: string; s: number; e: number}[]; videoMs: number; width: number; height: number} | null>;
+    saveBeats(id: string, beats: AgentBeat[], label: string): Promise<{n: number | null; view: any}>;
+    enableTimeline(id: string): Promise<{n: number; summary: string; view: any}>;
+  };
   plan: {save(id: string, plan: unknown, assetsPlan?: unknown): Promise<boolean>; ai(id: string, brief?: string): Promise<any>; edit(id: string, instruction: string): Promise<{n: number; summary: string}>; history(id: string): Promise<PlanChange[]>; restore(id: string, n: number): Promise<boolean>};
   looks: {list(): Promise<Look[]>; meta(): Promise<LookMeta>; save(l: Partial<Look>): Promise<Look>; remove(id: string): Promise<void>; sample(): Promise<string>; ai(r: {referencePath?: string; description?: string; name?: string}): Promise<Omit<Look, 'id' | 'builtin'>>};
   library: {list(): Promise<Reference[]>; add(file: string): Promise<unknown>; remove(id: string): Promise<void>};

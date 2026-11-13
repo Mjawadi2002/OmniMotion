@@ -16,7 +16,7 @@ const useElapsed = (running: boolean, since: number) => {
   return Math.max(0, Math.round((now - since) / 1000));
 };
 
-const DONE_TITLE: Record<AiJob, string> = {plan: 'Plan written', edit: 'Change made', look: 'Look designed', hook: 'Hook judged', analyze: 'Analysis ready'};
+const DONE_TITLE: Record<AiJob, string> = {plan: 'Plan written', edit: 'Change made', look: 'Look designed', hook: 'Hook judged', analyze: 'Analysis ready', agent: 'Done', script: 'Script written'};
 
 const StepIcon = ({status}: {status: StepStatus}) =>
   status === 'done' ? (

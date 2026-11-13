@@ -45,6 +45,8 @@ contextBridge.exposeInMainWorld('omnimotion', {
   },
   job: {read: call('job:read')},
   hook: {read: call('hook:read'), analyze: call('hook:analyze')},
+  motion: {script: call('motion:script'), voices: call('motion:voices'), voice: call('motion:voice'), build: call('motion:build')},
+  agent: {build: call('agent:build'), continue: call('agent:continue'), check: call('agent:check'), last: call('agent:last'), state: call('agent:state'), edit: call('agent:edit'), undo: call('agent:undo'), render: call('agent:render'), use: call('agent:use'), beats: call('agent:beats'), saveBeats: call('agent:saveBeats'), enableTimeline: call('agent:enableTimeline')},
   plan: {save: call('plan:save'), ai: call('plan:ai'), edit: call('plan:edit'), history: call('plan:history'), restore: call('plan:restore')},
   looks: {list: call('looks:list'), meta: call('looks:meta'), save: call('looks:save'), remove: call('looks:remove'), sample: call('looks:sample'), ai: call('looks:ai')},
   library: {list: call('library:list'), add: call('library:add'), remove: call('library:remove')},

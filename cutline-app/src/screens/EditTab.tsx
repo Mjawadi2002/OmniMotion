@@ -142,7 +142,7 @@ export const EditTab = ({project, job, run, reloadJob, settings, persist}: {pers
               <div className="stack" style={{gap: 'var(--sp-3)'}}>
                 <p className="muted">Try one of these, or write your own:</p>
                 <div className="row wrap" style={{gap: 'var(--sp-2)'}}>
-                  {EXAMPLES[project.mode].map((ex) => (
+                  {EXAMPLES[project.mode === "vlog" ? "vlog" : "talking"].map((ex) => (
                     <button key={ex} className="chip example" onClick={() => setText(ex)}>
                       {ex}
                     </button>

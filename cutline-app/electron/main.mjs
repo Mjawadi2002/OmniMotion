@@ -18,6 +18,9 @@ import {ensureSample, listLooks, lookMeta, lookPathFor, removeLook, saveLook} fr
 import {lookWithAi} from './ailook.mjs';
 import {studyReference} from './aistyle.mjs';
 import {hookWithAi, readHook} from './aihook.mjs';
+import {SCRIPT_STEPS, VOICE_STEPS, makeVoice, writeScript} from './motion.mjs';
+import {MODELS, listVoices, subscription} from './eleven.mjs';
+import {CONTINUE_STEPS, agentCheck, continueChecks, MOTION_STEPS, startMotionBuild, AGENT_EDIT_STEPS, AGENT_RENDER_STEPS, AGENT_STEPS, TIMELINE_INSTRUCTION, agentBeats, agentEdit, agentRender, agentSaveBeats, agentState, agentUndo, startAgentBuild} from './agentbuild.mjs';
 import {analyzeVideo, getAnalysis, installYtdlp, listAnalyses, removeAnalysis, ytdlpStatus} from './competitor.mjs';
 
 // the app was called Cutline before; keep its saved projects, looks and settings
@@ -106,7 +109,8 @@ const registerIpc = () => {
     const name = String(data.name || 'Untitled').trim() || 'Untitled';
     const dir = path.join(s.workspaceRoot, `${slug(name)}-${id}`);
     ensureWorkspace(dir);
-    return saveProject({id, name, mode: data.mode === 'vlog' ? 'vlog' : 'talking', style: data.style === 'light' ? 'light' : 'tech', popout: !!data.popout, look: data.look || undefined, dir, createdAt: Date.now(), updatedAt: Date.now(), media: [], outputs: [], settings: {cutSilence: true, music: 'on', language: 'auto'}, status: {}});
+    const mode = data.mode === 'vlog' ? 'vlog' : data.mode === 'motion' ? 'motion' : 'talking';
+    return saveProject({id, name, mode, style: data.style === 'light' ? 'light' : 'tech', popout: !!data.popout, look: data.look || undefined, dir, createdAt: Date.now(), updatedAt: Date.now(), media: [], outputs: [], settings: {cutSilence: true, music: 'on', language: 'auto', ...(mode === 'motion' ? {agentActive: true} : {})}, status: {}, ...(mode === 'motion' ? {motion: {aspect: data.motion && data.motion.aspect === '16:9' ? '16:9' : '9:16', lengthS: [30, 45, 60].includes(Number(data.motion && data.motion.lengthS)) ? Number(data.motion.lengthS) : 30, language: 'auto', captions: {style: 'kinetic'}}} : {})});
   });
   handle('projects:save', (p) => saveProject(p));
   handle('projects:remove', (id) => removeProject(id));
@@ -229,6 +233,86 @@ const registerIpc = () => {
       run.end(false, {error: e.message});
       throw e;
     }
+  });
+  // Agent build: Claude writes a bespoke composition that recreates a reference and checks its own frames; the result is a live preview
+  // the user can change in plain words (Edit, with undo) and render (Render)
+  const agentView = (p) => {
+    const st = agentState(p);
+    if (!st) return null;
+    return {previewUrl: `${dirBase(st.dir)}/preview/preview.html?v=${Math.round(st.built)}`, history: st.history, built: st.built, check: st.check};
+  };
+  const agentJob = async (id, job, title, steps, fn) => {
+    const p = requireProject(id);
+    const run = startAiRun(job, title, steps);
+    try {
+      const r = await fn(p, run);
+      run.end(true, {...r, tokens: lastUsage});
+      return {...r, view: agentView(p)};
+    } catch (e) {
+      if (!e.cancelled) console.error(`[agent:${job}]`, e.stack || e.message);
+      run.end(false, {error: e.message});
+      throw e;
+    }
+  };
+  handle('agent:build', (id, opts) =>
+    agentJob(id, 'agent', 'Claude is rebuilding the reference on your footage', AGENT_STEPS, async (p, run) => {
+      const r = await startAgentBuild(p, readJob(p, mediaUrl), {reference: opts && opts.reference, notes: opts && opts.notes}, run);
+      saveProject({...p, settings: {...p.settings, agentActive: true}});
+      return r;
+    }),
+  );
+  handle('agent:state', (id) => agentView(requireProject(id)));
+  // Motion graphics: script (Claude), voice-over (ElevenLabs), build (Agent build without footage)
+  handle('motion:script', async (id) => {
+    const p = requireProject(id);
+    const run = startAiRun('script', 'Claude is writing your script', SCRIPT_STEPS);
+    try {
+      const next = await writeScript(p, run);
+      run.end(true, {tokens: lastUsage});
+      return next;
+    } catch (e) {
+      run.end(false, {error: e.message});
+      throw e;
+    }
+  });
+  handle('motion:voices', async () => ({voices: await listVoices(), subscription: await subscription(), models: MODELS}));
+  handle('motion:voice', async (id) => {
+    const p = requireProject(id);
+    const run = startAiRun('script', 'Recording the voice-over', VOICE_STEPS);
+    try {
+      const next = await makeVoice(p, run);
+      run.end(true, {});
+      return next;
+    } catch (e) {
+      run.end(false, {error: e.message});
+      throw e;
+    }
+  });
+  handle('motion:build', (id, opts) => agentJob(id, 'agent', 'Claude is animating your video', MOTION_STEPS, (p, run) => startMotionBuild(p, opts || {}, run)));
+  // a build that stopped part way (usage limit, network...): Claude resumes its own conversation and finishes the check rounds
+  handle('agent:check', (id) => agentCheck(requireProject(id)));
+  handle('agent:continue', (id) => agentJob(id, 'agent', 'Claude is finishing the checks', CONTINUE_STEPS, (p, run) => continueChecks(p, run)));
+  handle('agent:beats', (id) => agentBeats(requireProject(id)));
+  handle('agent:saveBeats', (id, beats, label) => agentJob(id, 'edit', 'Updating the timeline', [{id: 'preview', label: 'Rebuilding the preview'}], (p, run) => agentSaveBeats(p, beats, label, run)));
+  handle('agent:enableTimeline', (id) => agentJob(id, 'edit', 'Claude is making the timeline editable', AGENT_EDIT_STEPS, (p, run) => agentEdit(p, TIMELINE_INSTRUCTION, run)));
+  handle('agent:edit', (id, instruction) => agentJob(id, 'edit', 'Claude is changing your edit', AGENT_EDIT_STEPS, (p, run) => agentEdit(p, String(instruction || '').slice(0, 2000), run)));
+  handle('agent:undo', (id) => agentJob(id, 'edit', 'Undoing the last change', [{id: 'preview', label: 'Rebuilding the preview'}], (p, run) => agentUndo(p, run)));
+  handle('agent:render', (id, opts) =>
+    agentJob(id, 'agent', 'Rendering your Agent build', AGENT_RENDER_STEPS, async (p, run) => {
+      const r = await agentRender(p, opts, run);
+      return {...r, url: mediaUrl(r.out)};
+    }),
+  );
+  handle('agent:use', (id, on) => {
+    const p = requireProject(id);
+    return saveProject({...p, settings: {...p.settings, agentActive: !!on}});
+  });
+  handle('agent:last', (id) => {
+    const p = requireProject(id);
+    const dir = path.join(p.dir, 'output');
+    if (!fs.existsSync(dir)) return null;
+    const f = fs.readdirSync(dir).filter((x) => /_agent_\d+\.mp4$/.test(x)).sort().pop();
+    return f ? {out: path.join(dir, f), url: mediaUrl(path.join(dir, f))} : null;
   });
   handle('plan:history', (id) => listHistory(requireProject(id)));
   handle('plan:restore', (id, n) => {

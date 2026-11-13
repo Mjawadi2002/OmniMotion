@@ -103,7 +103,7 @@ const Row = ({m, onRemove}: {m: MediaItem; onRemove: () => void}) => {
 
 export const MediaTab = ({project, persist}: {project: Project; persist: (p: Project) => Promise<void>}) => {
   const toast = useToast();
-  const zones = ZONES[project.mode];
+  const zones = ZONES[project.mode === "vlog" ? "vlog" : "talking"];
   const usedOf = (cap?: 'images' | 'videos') => (cap === 'images' ? project.media.filter((m) => IMG_ROLES.includes(m.role)).length : cap === 'videos' ? project.media.filter((m) => m.role === 'broll').length : 0);
   const add = async (role: Role, paths: string[], cap?: 'images' | 'videos') => {
     try {

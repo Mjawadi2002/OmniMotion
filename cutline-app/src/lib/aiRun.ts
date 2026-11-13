@@ -2,7 +2,7 @@ import {useSyncExternalStore} from 'react';
 import {api, type AiEvent} from './api';
 
 export type StepStatus = 'pending' | 'active' | 'done' | 'skipped' | 'warn';
-export type AiJob = 'plan' | 'edit' | 'look' | 'hook' | 'analyze';
+export type AiJob = 'plan' | 'edit' | 'look' | 'hook' | 'analyze' | 'agent' | 'script';
 
 export interface AiRunState {
   runId: string;

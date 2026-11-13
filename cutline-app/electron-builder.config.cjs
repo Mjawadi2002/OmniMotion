@@ -41,6 +41,8 @@ module.exports = {
         '!_analysis/**',
         '!out/**',
         '!public/**',
+        '!paper/**',
+        '!**/agent/stills/**',
         '!**/.cache/**',
         // optional features that need extra software (local Whisper, the pop-out cut-out model) are not included
         '!whisper.cpp/**',

@@ -126,6 +126,9 @@ const describeTool = (name, input) => {
     if (/\.md$/i.test(base)) return `Reading the guide ${base}`;
     return `Reading ${base || 'a file'}`;
   }
+  if (name === 'Write') return `Writing ${base || 'a file'}`;
+  if (name === 'Edit') return `Fixing ${base || 'a file'}`;
+  if (name === 'Glob') return 'Listing files';
   return `Using ${name}${base ? ' on ' + base : ''}`;
 };
 
@@ -134,11 +137,15 @@ const winQuote = (a) => (/[\s"&|<>^()]/.test(a) || a === '' ? `"${String(a).repl
 
 // Runs Claude Code on a prompt and streams what it does. Fixed overhead is kept small (only the Read tool, no connectors, no skills, no saved settings), which
 // is most of the difference between a few thousand and tens of thousands of tokens of the user's plan per request. run (optional) receives the live events.
-const claudeRun = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null) =>
+// opts (Agent build): tools (list), permissionMode, maxTurns, sessionId (start a kept conversation) or resume (continue it), model.
+// File tools stay limited to cwd and addDirs; there is never a shell tool.
+const claudeRun = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, opts = {}) =>
   new Promise((resolve, reject) => {
     const bin = claudeBin();
     if (!bin) return reject(new Error('Claude Code is not installed. Open Settings and choose Install Claude Code.'));
-    const args = ['-p', '--model', getSettings().aiModel || 'sonnet', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--tools', 'Read', '--allowedTools', 'Read', '--strict-mcp-config', '--disable-slash-commands', '--setting-sources', '', '--no-session-persistence', '--max-turns', '16', ...addDirs.flatMap((d) => ['--add-dir', d])];
+    const tools = (opts.tools || ['Read']).filter((t) => ['Read', 'Write', 'Edit', 'Glob', 'Grep'].includes(t)).join(',');
+    const session = opts.resume ? ['--resume', opts.resume] : opts.sessionId ? ['--session-id', opts.sessionId] : ['--no-session-persistence'];
+    const args = ['-p', '--model', opts.model || getSettings().aiModel || 'sonnet', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--tools', tools, '--allowedTools', tools, ...(opts.permissionMode ? ['--permission-mode', opts.permissionMode] : []), '--strict-mcp-config', '--disable-slash-commands', '--setting-sources', '', ...session, '--max-turns', String(opts.maxTurns || 16), ...addDirs.flatMap((d) => ['--add-dir', d])];
     const viaShell = process.platform === 'win32' && isWinScript(bin);
     const child = viaShell ? spawn(winQuote(bin) + ' ' + args.map(winQuote).join(' '), [], {cwd, shell: true, windowsHide: true, env: claudeEnv()}) : spawn(bin, args, {cwd, windowsHide: true, env: claudeEnv()});
     lastUsage = null;

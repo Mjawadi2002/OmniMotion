@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {FilmSlate, Plus, Trash, FolderOpen, UserFocus, VideoCamera} from '@phosphor-icons/react';
+import {FilmSlate, Plus, Trash, FolderOpen, Shapes, UserFocus, VideoCamera} from '@phosphor-icons/react';
 import {api, type Mode, type Project, type Settings, type Style} from '../lib/api';
 import {Dialog, fmtDate, go, useAsync, useToast} from '../lib/util';
 import {LookPicker} from './Looks';
@@ -31,14 +31,16 @@ export const NewProject = ({defaults, onClose}: {defaults?: Settings['defaults']
   const [style, setStyle] = useState<Style>(defaults?.style || 'tech');
   const [popout, setPopout] = useState(false);
   const [lookId, setLookId] = useState('tech');
+  const [aspect, setAspect] = useState<'9:16' | '16:9'>('9:16');
+  const [lengthS, setLengthS] = useState(30);
   const lookData = useAsync(() => api().looks.list(), []);
   const metaData = useAsync(() => api().looks.meta(), []);
   const [busy, setBusy] = useState(false);
   const create = async () => {
     setBusy(true);
     try {
-      const p = await api().projects.create({name: name.trim() || 'Untitled project', mode, style, popout: mode === 'talking' && style === 'light' && popout, look: ['tech', 'light'].includes(lookId) ? undefined : lookId});
-      go(`#/project/${p.id}/media`);
+      const p = await api().projects.create({name: name.trim() || 'Untitled project', mode, style, popout: mode === 'talking' && style === 'light' && popout, look: mode === 'motion' || ['tech', 'light'].includes(lookId) ? undefined : lookId, motion: mode === 'motion' ? {aspect, lengthS} : undefined});
+      go(`#/project/${p.id}/${mode === 'motion' ? 'brief' : 'media'}`);
       onClose();
     } catch (e: any) {
       toast(e.message, 'bad');
@@ -81,8 +83,46 @@ export const NewProject = ({defaults, onClose}: {defaults?: Settings['defaults']
             </span>
             <span className="d">A voice recording plus a set of clips. The clips are cut full screen to your voice.</span>
           </button>
+          <button className="choice" role="radio" aria-checked={mode === 'motion'} onClick={() => setMode('motion')}>
+            <span className="t">
+              <Shapes size={20} aria-hidden /> Motion graphics
+            </span>
+            <span className="d">No camera. Describe an idea: Claude writes the script, ElevenLabs voices it, and Claude animates every frame.</span>
+          </button>
         </div>
       </div>
+      {mode === 'motion' ? (
+        <>
+          <div className="field">
+            <span className="label" id="aspect-l">
+              Format
+            </span>
+            <div className="grid-2" role="radiogroup" aria-labelledby="aspect-l">
+              <button className="choice" role="radio" aria-checked={aspect === '9:16'} onClick={() => setAspect('9:16')}>
+                <span className="t">9:16 vertical</span>
+                <span className="d">Reels, TikTok, Shorts (1080x1920)</span>
+              </button>
+              <button className="choice" role="radio" aria-checked={aspect === '16:9'} onClick={() => setAspect('16:9')}>
+                <span className="t">16:9 horizontal</span>
+                <span className="d">YouTube, presentations (1920x1080)</span>
+              </button>
+            </div>
+          </div>
+          <div className="field">
+            <span className="label" id="len-l">
+              Length
+            </span>
+            <div className="row" role="radiogroup" aria-labelledby="len-l">
+              {[30, 45, 60].map((n) => (
+                <button key={n} className={`btn ${lengthS === n ? 'primary' : 'secondary'}`} role="radio" aria-checked={lengthS === n} onClick={() => setLengthS(n)}>
+                  {n === 60 ? '1 min' : `${n} s`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : null}
+      {mode !== 'motion' ? (
       <div className="field">
         <span className="label" id="style-l">
           Look
@@ -102,6 +142,7 @@ export const NewProject = ({defaults, onClose}: {defaults?: Settings['defaults']
           </label>
         ) : null}
       </div>
+      ) : null}
     </Dialog>
   );
 };
@@ -145,7 +186,7 @@ export const Projects = ({settings}: {settings: Settings | null}) => {
               <div className="meta">
                 <h3>{p.name}</h3>
                 <div className="row wrap">
-                  <span className="chip">{p.mode === 'vlog' ? 'Vlog' : 'Talking head'}</span>
+                  <span className="chip">{p.mode === 'vlog' ? 'Vlog' : p.mode === 'motion' ? `Motion graphics ${p.motion?.aspect || '9:16'}` : 'Talking head'}</span>
                   {p.mode === 'talking' ? <span className="chip">{p.style === 'light' ? 'Light' : 'Tech'}</span> : null}
                   {p.outputs.length ? <span className="chip ok">{p.outputs.length} render{p.outputs.length > 1 ? 's' : ''}</span> : null}
                 </div>

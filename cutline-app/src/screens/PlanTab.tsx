@@ -7,6 +7,7 @@ import type {RunState} from '../lib/run';
 import {KINDS, SLOTS, anchorFromWord, defaultModeFor, describeAnchor, finalizePlan, getPath, kindsFor, modesFor, newBeat, setPath, type Anchor, type Field} from '../lib/planModel';
 import {RunPanel} from './RunPanel';
 import {AiPanel} from './AiPanel';
+import {AgentBuild} from './AgentBuild';
 import {StyleBar} from './StyleBar';
 import {Timeline} from './Timeline';
 
@@ -449,6 +450,8 @@ export const PlanTab = ({project, job, run, reloadJob, settings, persist}: {pers
       </section>
 
       <AiPanel job="plan" onRetry={withClaude} />
+
+      {!vlog ? <AgentBuild project={project} job={job} settings={settings} busy={running} persist={persist} /> : null}
 
       {run.state.step === 'auto' || run.state.step === 'plan' ? <RunPanel run={run.state} onCancel={run.cancel} /> : null}
 
