@@ -10,7 +10,7 @@ import {enginePaths, slug} from './paths.mjs';
 import {getSettings} from './store.mjs';
 import {engineCommand, engineEnv} from './runtime.mjs';
 import {claudeRun} from './ai.mjs';
-import {killChild} from './airun.mjs';
+import {aiBusy, killChild} from './airun.mjs';
 import {analyzeReference} from './refanalyze.mjs';
 
 export const AGENT_STEPS = [
@@ -22,6 +22,10 @@ export const AGENT_STEPS = [
 ];
 
 const MAX_ROUNDS = 3;
+// Fast: Sonnet, 16 reference frames, one check round (minutes). Best: Opus (or the model in Settings), every reference frame, up to three rounds.
+const SPEEDS = {fast: {model: 'sonnet', rounds: 1}, best: {model: null, rounds: MAX_ROUNDS}};
+const speedOf = (v) => (v === 'best' ? 'best' : 'fast');
+const FAST_NOTE = '\nWork efficiently: read each file once, do not re-read what you already read, and write Composition.tsx in one go rather than in many small edits.';
 
 // run the engine's agent script, streaming its lines into the run log; resolves {code, out}
 const agentScript = (args, run, onLine = () => {}) =>
@@ -103,7 +107,9 @@ export const startAgentBuild = async (project, job, opts, run) => {
   // 1. workspace
   run.step('setup', 'active');
   const notes = String(opts.notes || '').slice(0, 2000).replace(/\s+/g, ' ');
+  const speed = speedOf(opts.speed);
   const setupArgs = ['setup', '--job', jobDir, '--footage', footage.path, '--reference', reference, '--input-dir', path.join(project.dir, 'input')];
+  if (speed === 'fast') setupArgs.push('--fast');
   if (notes) setupArgs.push('--notes', notes);
   if (track) setupArgs.push('--music', track.path);
   const s = await agentScript(setupArgs, run, (l) => run.log(l));
@@ -115,7 +121,7 @@ export const startAgentBuild = async (project, job, opts, run) => {
   await writeAnalysis(reference, ws, run);
   run.step('measure', 'done');
 
-  return designAndCheck({ws, jobDir, run, first: firstPrompt(), review: reviewPrompt, reference, kind: 'agent'});
+  return designAndCheck({ws, jobDir, run, first: firstPrompt(), review: reviewPrompt, reference, kind: 'agent', speed});
 };
 
 // Claude designs and writes, then rounds of check frames it reviews and fixes, then the live preview.
@@ -134,32 +140,34 @@ const writeSession = (ws, patch) => {
   fs.writeFileSync(sessionFile(ws), JSON.stringify(next, null, 1));
   return next;
 };
-const buildOpts = () => ({tools: ['Read', 'Write', 'Edit', 'Glob'], permissionMode: 'acceptEdits', maxTurns: 120, model: getSettings().agentModel || 'opus'});
+const buildOpts = (speed = 'best') => ({tools: ['Read', 'Write', 'Edit', 'Glob'], permissionMode: 'acceptEdits', maxTurns: 120, model: SPEEDS[speed].model || getSettings().agentModel || 'opus'});
 
-const designAndCheck = async ({ws, jobDir, run, first, review, reference = null, kind}) => {
+const designAndCheck = async ({ws, jobDir, run, first, review, reference = null, kind, speed = 'best'}) => {
   run.step('write', 'active');
   const sessionId = crypto.randomUUID();
-  const claudeOpts = buildOpts();
-  writeSession(ws, {sessionId, reference, kind, stage: 'write', rounds: 0, clean: false, interrupted: null});
-  const summary = await claudeRun(first, ws, 45 * 60 * 1000, [], run, {...claudeOpts, sessionId});
+  const claudeOpts = buildOpts(speed);
+  const maxRounds = SPEEDS[speed].rounds;
+  run.log(speed === 'fast' ? `Fast build: ${claudeOpts.model}, one check round` : `Best quality: ${claudeOpts.model}, up to ${maxRounds} check rounds`);
+  writeSession(ws, {sessionId, reference, kind, speed, maxRounds, stage: 'write', rounds: 0, clean: false, interrupted: null});
+  const summary = await claudeRun(speed === 'fast' ? first + FAST_NOTE : first, ws, 45 * 60 * 1000, [], run, {...claudeOpts, sessionId});
   run.log(summary.trim().slice(0, 380), 'write');
   run.step('write', 'done');
   writeSession(ws, {stage: 'check'});
-  return checkAndPreview({ws, jobDir, run, review, sessionId, claudeOpts, startRound: 1});
+  return checkAndPreview({ws, jobDir, run, review, sessionId, claudeOpts, startRound: 1, maxRounds});
 };
 
 // rounds of check frames from startRound, then the live preview. When Claude stops during a check but the composition renders,
 // the build still ends with a preview (it is a finished, working video) and says how far the checks got.
-const checkAndPreview = async ({ws, jobDir, run, review, sessionId, claudeOpts, startRound}) => {
+const checkAndPreview = async ({ws, jobDir, run, review, sessionId, claudeOpts, startRound, maxRounds = MAX_ROUNDS}) => {
   run.step('check', 'active');
   let clean = false;
   let interrupted = null;
   let round = startRound;
-  for (; round <= MAX_ROUNDS + 1 && !clean; round++) {
+  for (; round <= maxRounds + 1 && !clean; round++) {
     const stillsDir = path.join(ws, 'stills', `round-${round}`);
     run.log(`Rendering check frames (round ${round})`);
     const r = await agentScript(['stills', '--job', jobDir, '--count', '16', '--out', stillsDir], run, (l) => /^still \d+\/\d+/.test(l) || run.log(l));
-    if (round > MAX_ROUNDS) {
+    if (round > maxRounds) {
       if (r.code !== 0) throw new Error('The composition still does not build after the fixes. Try again, or describe the problem in the notes.');
       break;
     }
@@ -212,9 +220,11 @@ export const continueChecks = async (project, run) => {
   const review = (sess.kind || (project.mode === 'motion' ? 'motion' : 'agent')) === 'motion' ? motionReview : reviewPrompt;
   const done = fs.existsSync(path.join(ws, 'stills')) ? fs.readdirSync(path.join(ws, 'stills')).filter((d) => /^round-\d+$/.test(d)).length : 0;
   // the round that was interrupted is checked again from fresh frames
-  const startRound = Math.min(MAX_ROUNDS, Math.max(1, (sess.rounds || 0) + 1, done));
+  const speed = speedOf(sess.speed || 'best');
+  const maxRounds = sess.maxRounds || SPEEDS[speed].rounds;
+  const startRound = Math.min(maxRounds, Math.max(1, (sess.rounds || 0) + 1, done));
   run.log(`Continuing Claude's checks from round ${startRound}`);
-  return checkAndPreview({ws, jobDir, run, review, sessionId: sess.sessionId, claudeOpts: buildOpts(), startRound});
+  return checkAndPreview({ws, jobDir, run, review, sessionId: sess.sessionId, claudeOpts: buildOpts(speed), startRound, maxRounds});
 };
 
 // ---------------------------------------------------------------- Motion graphics video: no footage, a voice-over, Claude designs every frame
@@ -258,7 +268,9 @@ export const startMotionBuild = async (project, opts, run) => {
     briefFile,
     JSON.stringify({title: m.title || project.name, idea: m.idea || '', understanding: m.understanding || '', style: [m.style || '', String(opts.notes || '')].filter(Boolean).join(' '), captions: captionText(m), lengthS: m.lengthS || 30, script: m.script}, null, 1),
   );
+  const speed = speedOf(opts.speed);
   const args = ['setup-motion', '--job', jobDir, '--voice', m.voice.audio, '--words', m.voice.wordsFile, '--aspect', m.aspect || '9:16', '--brief', briefFile, '--input-dir', path.join(project.dir, 'input')];
+  if (speed === 'fast') args.push('--fast');
   if (reference) args.push('--reference', reference);
   if (track) args.push('--music', track.path);
   const s = await agentScript(args, run, (l) => run.log(l));
@@ -270,7 +282,7 @@ export const startMotionBuild = async (project, opts, run) => {
   else run.log('No reference: Claude designs from the style direction.');
   run.step('measure', 'done');
 
-  return designAndCheck({ws, jobDir, run, first: motionFirst(), review: motionReview, reference, kind: 'motion'});
+  return designAndCheck({ws, jobDir, run, first: motionFirst(), review: motionReview, reference, kind: 'motion', speed});
 };
 
 // the caption choice in words Claude can follow exactly
@@ -323,7 +335,21 @@ export const agentCheck = (project) => {
   const sess = readSession(ws);
   if (!sess || !sess.sessionId) return null;
   const hasComp = fs.existsSync(path.join(ws, 'Composition.tsx'));
-  return {rounds: sess.rounds || 0, clean: !!sess.clean, interrupted: sess.interrupted || null, canContinue: hasComp && !sess.clean && (sess.rounds || 0) < MAX_ROUNDS, previewMissing: !fs.existsSync(path.join(ws, 'preview', 'preview.html'))};
+  // the checks can only be continued once Claude has written the composition (stage past "write"; a new workspace holds a placeholder),
+  // and never while a build or a change is running
+  const written = sess.stage && sess.stage !== 'write';
+  const running = aiBusy();
+  const writeStopped = sess.stage === 'write' && !running; // stopped while writing: nothing to check, it must be built again
+  return {
+    rounds: sess.rounds || 0,
+    clean: !!sess.clean,
+    interrupted: sess.interrupted || null,
+    running,
+    writeStopped,
+    canContinue: !running && hasComp && written && !sess.clean && (sess.rounds || 0) < (sess.maxRounds || MAX_ROUNDS),
+    maxRounds: sess.maxRounds || MAX_ROUNDS,
+    previewMissing: !fs.existsSync(path.join(ws, 'preview', 'preview.html')),
+  };
 };
 
 export const agentState = (project) => {
@@ -346,7 +372,7 @@ export const agentState = (project) => {
         .sort((a, b) => a.n - b.n)
     : [];
   const sess = readSession(ws);
-  const check = sess ? {rounds: sess.rounds || 0, clean: !!sess.clean, interrupted: sess.interrupted || null, canContinue: !!sess.sessionId && !sess.clean && (sess.rounds || 0) < MAX_ROUNDS} : null;
+  const check = sess ? {rounds: sess.rounds || 0, clean: !!sess.clean, interrupted: sess.interrupted || null, canContinue: !!sess.sessionId && !sess.clean && (sess.rounds || 0) < (sess.maxRounds || MAX_ROUNDS)} : null;
   return {dir: ws, page, history, built: fs.statSync(page).mtimeMs, check};
 };
 

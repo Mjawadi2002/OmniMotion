@@ -33,7 +33,7 @@ const defaults = () => ({enginePath: '', workspaceRoot: defaultWorkspace(), them
 export const getSettings = () => ({...defaults(), ...readJson(settingsFile(), {})});
 export const publicSettings = () => {
   const s = getSettings();
-  return {...s, secrets: undefined, hasKeys: {elevenlabs: !!s.secrets.elevenlabs, anthropic: !!s.secrets.anthropic}, canEncrypt: safeStorage.isEncryptionAvailable()};
+  return {...s, secrets: undefined, hasKeys: {elevenlabs: !!s.secrets.elevenlabs, anthropic: !!s.secrets.anthropic, freellm: !!s.secrets.freellm}, canEncrypt: safeStorage.isEncryptionAvailable()};
 };
 export const saveSettings = (patch) => {
   const s = getSettings();

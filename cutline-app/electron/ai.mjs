@@ -5,6 +5,8 @@ import path from 'node:path';
 import {spawn} from 'node:child_process';
 import {claudeBin, claudeEnv} from './claude.mjs';
 import {killChild} from './airun.mjs';
+import {freeBackend, freeEnv, isLimitError, llmMode, viaFree} from './freellm.mjs';
+import {currentProject, memoryBlock} from './memory.mjs';
 import {enginePaths} from './paths.mjs';
 import {inputThumbs} from './media.mjs';
 import {cacheDir} from './store.mjs';
@@ -98,6 +100,17 @@ const extractJson = (text) => {
 };
 
 const viaApi = async (prompt, images) => {
+  const mode = llmMode();
+  const freeContent = () => [...images.map((img) => ({type: 'image', source: {type: 'base64', media_type: /.jpe?g$/i.test(img) ? 'image/jpeg' : 'image/png', data: fs.readFileSync(img).toString('base64')}})), {type: 'text', text: prompt}];
+  if (mode === 'free') return viaFree(freeContent());
+  try {
+    return await viaAnthropic(prompt, images);
+  } catch (e) {
+    if (mode === 'fallback' && isLimitError(e.message)) return viaFree(freeContent());
+    throw e;
+  }
+};
+const viaAnthropic = async (prompt, images) => {
   const key = getSecret('anthropic');
   if (!key) throw new Error('No Anthropic API key saved. Add it in Settings, or connect Claude Code.');
   const content = [];
@@ -139,15 +152,18 @@ const winQuote = (a) => (/[\s"&|<>^()]/.test(a) || a === '' ? `"${String(a).repl
 // is most of the difference between a few thousand and tens of thousands of tokens of the user's plan per request. run (optional) receives the live events.
 // opts (Agent build): tools (list), permissionMode, maxTurns, sessionId (start a kept conversation) or resume (continue it), model.
 // File tools stay limited to cwd and addDirs; there is never a shell tool.
-const claudeRun = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, opts = {}) =>
+const claudeRunOnce = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, opts = {}, backend = null) =>
   new Promise((resolve, reject) => {
     const bin = claudeBin();
     if (!bin) return reject(new Error('Claude Code is not installed. Open Settings and choose Install Claude Code.'));
     const tools = (opts.tools || ['Read']).filter((t) => ['Read', 'Write', 'Edit', 'Glob', 'Grep'].includes(t)).join(',');
     const session = opts.resume ? ['--resume', opts.resume] : opts.sessionId ? ['--session-id', opts.sessionId] : ['--no-session-persistence'];
-    const args = ['-p', '--model', opts.model || getSettings().aiModel || 'sonnet', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--tools', tools, '--allowedTools', tools, ...(opts.permissionMode ? ['--permission-mode', opts.permissionMode] : []), '--strict-mcp-config', '--disable-slash-commands', '--setting-sources', '', ...session, '--max-turns', String(opts.maxTurns || 16), ...addDirs.flatMap((d) => ['--add-dir', d])];
+    const args = ['-p', '--model', backend ? backend.model : opts.model || getSettings().aiModel || 'sonnet', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--tools', tools, '--allowedTools', tools, ...(opts.permissionMode ? ['--permission-mode', opts.permissionMode] : []), '--strict-mcp-config', '--disable-slash-commands', '--setting-sources', '', ...session, '--max-turns', String(opts.maxTurns || 16), ...addDirs.flatMap((d) => ['--add-dir', d])];
     const viaShell = process.platform === 'win32' && isWinScript(bin);
-    const child = viaShell ? spawn(winQuote(bin) + ' ' + args.map(winQuote).join(' '), [], {cwd, shell: true, windowsHide: true, env: claudeEnv()}) : spawn(bin, args, {cwd, windowsHide: true, env: claudeEnv()});
+    // the free gateway is given to this process only (never to the user's environment or Claude settings)
+    const env = backend ? {...claudeEnv(), ...freeEnv(backend)} : claudeEnv();
+    if (backend && run) run.log(`Using free models through FreeLLMAPI (${backend.model})`);
+    const child = viaShell ? spawn(winQuote(bin) + ' ' + args.map(winQuote).join(' '), [], {cwd, shell: true, windowsHide: true, env}) : spawn(bin, args, {cwd, windowsHide: true, env});
     lastUsage = null;
     if (run) run.child = child;
     let final = null;
@@ -182,7 +198,22 @@ const claudeRun = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, op
             text += e.delta.text || '';
             chars += (e.delta.text || '').length;
             run && run.writing(chars, text.slice(-360));
-          } else if (e.delta.type === 'input_json_delta' && blocks[e.index]) blocks[e.index].json += e.delta.partial_json || '';
+          } else if (e.delta.type === 'input_json_delta' && blocks[e.index]) {
+            const bl = blocks[e.index];
+            bl.json += e.delta.partial_json || '';
+            // a big file is written as one tool call that streams for minutes: say how far it has got, so the log never looks frozen
+            if (run && /^(Write|Edit)$/.test(bl.name || '')) {
+              const now = Date.now();
+              if (!bl.file) {
+                const m = /"file_path"\s*:\s*"((?:[^"\\]|\\.)*)"/.exec(bl.json);
+                if (m) bl.file = path.basename(m[1].replace(/\\\\/g, '/'));
+              }
+              if (bl.json.length > 3000 && (!bl.reportedAt || now - bl.reportedAt > 6000)) {
+                bl.reportedAt = now;
+                run.log(`${bl.name === 'Edit' ? 'Changing' : 'Writing'} ${bl.file || 'a file'}: ${(bl.json.length / 1000).toFixed(1)}k characters so far`, 'write');
+              }
+            }
+          }
         } else if (e.type === 'content_block_stop') {
           const bl = blocks[e.index];
           if (bl && bl.type === 'tool_use') {
@@ -260,6 +291,41 @@ const claudeRun = (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, op
     child.stdin.write(prompt);
     child.stdin.end();
   });
+
+// Claude Code for one job: the project's memory goes first in every new conversation, and the free gateway is used as Settings say
+// ('free': always; 'fallback': when the Claude plan limit is reached, continuing the same conversation from where Claude stopped).
+const claudeRun = async (prompt, cwd, timeoutMs = 600000, addDirs = [], run = null, opts = {}) => {
+  const mem = opts.resume ? '' : memoryBlock(currentProject());
+  const full = mem ? `${mem}
+
+${prompt}` : prompt;
+  const mode = llmMode();
+  if (mode === 'free') {
+    const free = await freeBackend();
+    if (!free) throw new Error('Settings say to use free models, but your FreeLLMAPI gateway is not set up. Add it in Settings (Free models), or use the built-in one.');
+    return claudeRunOnce(full, cwd, timeoutMs, addDirs, run, opts, free);
+  }
+  try {
+    return await claudeRunOnce(full, cwd, timeoutMs, addDirs, run, opts);
+  } catch (e) {
+    if (mode !== 'fallback' || e.cancelled || !isLimitError(e.message)) throw e;
+    const free = await freeBackend();
+    if (!free) throw e;
+    run && run.log('Your Claude limit is reached: continuing on free models through FreeLLMAPI, from where Claude stopped', 'warn');
+    const sid = opts.resume || opts.sessionId;
+    if (!sid) return claudeRunOnce(full, cwd, timeoutMs, addDirs, run, opts, free);
+    const cont = `Claude stopped part way through this task (its usage limit was reached). You continue it in the same conversation: look at what is already done in the files, do not redo finished work, and finish exactly this task:
+
+${prompt}`;
+    try {
+      return await claudeRunOnce(cont, cwd, timeoutMs, addDirs, run, {...opts, sessionId: undefined, resume: sid}, free);
+    } catch (e2) {
+      // the limit was hit before the conversation was saved: start it on the gateway with the same id
+      if (!/no conversation|not found|could not find/i.test(e2.message)) throw e2;
+      return claudeRunOnce(full, cwd, timeoutMs, addDirs, run, {...opts, resume: undefined, sessionId: sid}, free);
+    }
+  }
+};
 
 export const testAi = async (provider) => {
   if (provider === 'api') {

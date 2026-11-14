@@ -2,7 +2,10 @@
 // to the chosen length; ElevenLabs reads it with the chosen voice and returns the time of every word.
 import fs from 'node:fs';
 import path from 'node:path';
-import {cacheDir, getSettings, saveProject} from './store.mjs';
+import {spawnSync} from 'node:child_process';
+import {pathToFileURL} from 'node:url';
+import {cacheDir, getSecret, getSettings, saveProject} from './store.mjs';
+import {enginePaths} from './paths.mjs';
 import {claudeRun, extractJson, viaApi} from './ai.mjs';
 import {synthesize} from './eleven.mjs';
 
@@ -85,6 +88,110 @@ export const makeVoice = async (project, run) => {
   run.log(`Voice-over ready: ${(durMs / 1000).toFixed(1)} s, ${r.words.length} words timed`);
   run.step('voice', 'done');
   const next = {...project, motion: {...m, voice: {audio: r.audio, wordsFile: path.join(dir, 'voiceover.words.json'), words: r.words.length, durationMs: durMs, chars: r.chars, at: Date.now(), voiceId: m.voiceId, voiceName: m.voiceName || ''}}};
+  saveProject(next);
+  return next;
+};
+
+// ---------------------------------------------------------------- your own recording instead of an ElevenLabs voice
+// The file is copied into the project, transcribed with the time of every word (ElevenLabs Scribe: Tunisian, Arabic, French,
+// English and more, detected on their own), and its transcript becomes the script, so the captions and the motion graphics
+// follow exactly what is said in the recording.
+export const RECORDING_STEPS = [
+  {id: 'copy', label: 'Copying your recording into the project'},
+  {id: 'transcribe', label: 'Transcribing it with the time of every word'},
+  {id: 'script', label: 'Turning the transcript into the script'},
+];
+
+// the transcript as script lines: one sentence a line, long sentences split at about 16 words
+const linesFromWords = (words) => {
+  const lines = [];
+  let cur = [];
+  const flush = () => {
+    if (cur.length) lines.push(cur.map((w) => w.text).join(' ').replace(/\s+([,.!?;:،؟])/g, '$1').trim());
+    cur = [];
+  };
+  for (const w of words) {
+    cur.push(w);
+    const end = /[.!?؟…]["'»”)]*$/.test(w.text);
+    if (end || cur.length >= 16) flush();
+  }
+  flush();
+  return lines.filter(Boolean);
+};
+
+export const useRecording = async (project, file, run) => {
+  const m = project.motion || {};
+  if (!file || !fs.existsSync(file)) throw new Error('The audio file was not found.');
+  run.step('copy', 'active');
+  const probe = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], {encoding: 'utf8', windowsHide: true});
+  const durS = parseFloat(probe.stdout) || 0;
+  if (!(durS > 1)) throw new Error('This file has no readable audio. Use an MP3, WAV, M4A or similar.');
+  if (durS > 600) throw new Error(`This recording is ${Math.round(durS / 60)} minutes long; the limit is 10 minutes.`);
+  const dir = path.join(project.dir, 'voice');
+  fs.mkdirSync(dir, {recursive: true});
+  const ext = path.extname(file).toLowerCase() || '.mp3';
+  const audio = path.join(dir, `recording${ext}`);
+  if (path.resolve(file) !== path.resolve(audio)) fs.copyFileSync(file, audio);
+  run.log(`${path.basename(file)}: ${durS.toFixed(1)} s`);
+  run.step('copy', 'done');
+
+  run.step('transcribe', 'active');
+  const e = enginePaths(getSettings().enginePath);
+  const lib = path.join(e.skill, 'scripts', 'lib', 'transcribe.mjs');
+  const cfg = JSON.parse(fs.readFileSync(path.join(e.skill, 'style.config.json'), 'utf8'));
+  const envName = cfg.transcription?.providers?.elevenlabs?.apiKeyEnv || 'ELEVENLABS_API_KEY';
+  const wav = path.join(dir, 'recording16k.wav');
+  const ff = spawnSync('ffmpeg', ['-v', 'error', '-y', '-i', audio, '-vn', '-ac', '1', '-ar', '16000', wav], {windowsHide: true});
+  if (ff.status !== 0) throw new Error('The recording could not be read.');
+  const {transcribeElevenLabs, readApiKey} = await import(pathToFileURL(lib).href);
+  const saved = getSecret('elevenlabs');
+  const had = process.env[envName];
+  if (saved) process.env[envName] = saved;
+  let t;
+  try {
+    if (!readApiKey(e.root, envName)) throw new Error('Transcribing a recording needs your ElevenLabs key: add it in Settings.');
+    const lang = m.language && m.language !== 'auto' ? m.language : 'auto';
+    run.log('ElevenLabs Scribe is transcribing (the language is detected on its own)');
+    t = await transcribeElevenLabs({projectRoot: e.root, wavPath: wav, cfg, lang, outDir: dir});
+  } finally {
+    if (saved) {
+      if (had === undefined) delete process.env[envName];
+      else process.env[envName] = had;
+    }
+    fs.rmSync(wav, {force: true});
+  }
+  const words = (t.words || []).filter((w) => w.text && w.endMs > w.startMs);
+  if (!words.length) throw new Error('No speech was found in this recording.');
+  const wordsFile = path.join(dir, 'recording.words.json');
+  fs.writeFileSync(wordsFile, JSON.stringify(words, null, 1));
+  run.log(`${words.length} words, language ${t.language || 'detected'}`);
+  run.step('transcribe', 'done', `${words.length} words`);
+
+  run.step('script', 'active');
+  const lines = linesFromWords(words);
+  run.step('script', 'done', `${lines.length} lines`);
+  const durMs = Math.round(durS * 1000);
+  const next = {
+    ...project,
+    motion: {
+      ...m,
+      // the script is what is said in the recording (captions and on-screen words must come from it); the written script is kept in case you go back
+      scriptBeforeRecording: m.scriptSource === 'recording' ? m.scriptBeforeRecording : m.script || null,
+      script: lines.map((line) => ({line, purpose: '', visual: ''})),
+      scriptSource: 'recording',
+      scriptLanguage: t.language || m.scriptLanguage || '',
+      voice: {audio, wordsFile, words: words.length, durationMs: durMs, chars: 0, at: Date.now(), voiceId: '', voiceName: '', source: 'recording', fileName: path.basename(file), language: t.language || ''},
+    },
+  };
+  saveProject(next);
+  return next;
+};
+
+// back to the written script (before a recording replaced it), for an ElevenLabs voice-over
+export const restoreWrittenScript = (project) => {
+  const m = project.motion || {};
+  if (m.scriptSource !== 'recording') return project;
+  const next = {...project, motion: {...m, script: m.scriptBeforeRecording || [], scriptBeforeRecording: null, scriptSource: 'written', voice: null}};
   saveProject(next);
   return next;
 };

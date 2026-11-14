@@ -18,7 +18,9 @@ export type MotionSettings = {
   voiceModel?: string;
   voiceSpeed?: number;
   voiceStability?: number;
-  voice?: {audio: string; wordsFile: string; words: number; durationMs: number; chars: number; at: number; voiceId: string; voiceName: string} | null;
+  voice?: {audio: string; wordsFile: string; words: number; durationMs: number; chars: number; at: number; voiceId: string; voiceName: string; source?: 'elevenlabs' | 'recording'; fileName?: string; language?: string} | null;
+  scriptSource?: 'written' | 'recording';
+  scriptBeforeRecording?: MotionLine[] | null;
 };
 export type Voice = {id: string; name: string; category: string; gender: string; age: string; accent: string; description: string; useCase: string; previewUrl: string};
 export type Style = 'tech' | 'light';
@@ -54,6 +56,16 @@ export interface Project {
   status: {prepared?: boolean; planned?: boolean; built?: boolean};
 }
 
+export type GatewayStatus = {
+  running: boolean;
+  missing?: boolean;
+  port?: number;
+  models?: number;
+  usablePlatforms?: string[];
+  providers?: {platform: string; name: string; url: string; good: string; note: string; keys: {id: number; masked: string; status: string; enabled: boolean}[]}[];
+  otherKeys?: {id: number; platform: string; masked: string; status: string}[];
+};
+
 export interface Settings {
   enginePath: string;
   workspaceRoot: string;
@@ -62,7 +74,12 @@ export interface Settings {
   aiProvider: 'claude-code' | 'api' | 'off';
   aiModel: string;
   defaults: {style: Style; mode: Mode};
-  hasKeys: {elevenlabs: boolean; anthropic: boolean};
+  llmMode?: 'claude' | 'free' | 'fallback';
+  freeSource?: 'builtin' | 'external';
+  freeBase?: string;
+  freeModel?: string;
+  memoryNote?: string;
+  hasKeys: {elevenlabs: boolean; anthropic: boolean; freellm?: boolean};
   canEncrypt: boolean;
 }
 
@@ -313,7 +330,7 @@ export interface Reference {
 export type AgentBeat = {id: string; track: string; label: string; startMs: number; endMs: number};
 
 interface Bridge {
-  settings: {get(): Promise<Settings>; save(p: Partial<Settings> & {defaults?: Partial<Settings['defaults']>}): Promise<Settings>; secret(name: 'elevenlabs' | 'anthropic', value: string): Promise<Settings>};
+  settings: {get(): Promise<Settings>; save(p: Partial<Settings> & {defaults?: Partial<Settings['defaults']>}): Promise<Settings>; secret(name: 'elevenlabs' | 'anthropic' | 'freellm', value: string): Promise<Settings>};
   engine: {info(): Promise<EngineInfo>};
   window: {overlay(o: {color: string; symbolColor: string}): Promise<boolean>};
   ai: {test(provider: 'claude-code' | 'api'): Promise<{ok: boolean; message: string}>; cancel(): Promise<boolean>; onEvent(cb: (e: AiEvent) => void): () => void};
@@ -335,12 +352,14 @@ interface Bridge {
     script(id: string): Promise<Project>;
     voices(): Promise<{voices: Voice[]; subscription: {tier: string; used: number | null; limit: number | null; resetsAt: number | null; error?: string}; models: {id: string; label: string}[]}>;
     voice(id: string): Promise<Project>;
-    build(id: string, opts?: {notes?: string}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
+    recording(id: string, file: string): Promise<Project>;
+    writtenScript(id: string): Promise<Project>;
+    build(id: string, opts?: {notes?: string; speed?: 'fast' | 'best'}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
   };
   agent: {
-    build(id: string, opts: {reference: string; notes?: string}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
+    build(id: string, opts: {reference: string; notes?: string; speed?: 'fast' | 'best'}): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
     continue(id: string): Promise<{clean: boolean; interrupted?: string | null; view: any}>;
-    check(id: string): Promise<{rounds: number; clean: boolean; interrupted: string | null; canContinue: boolean; previewMissing: boolean} | null>;
+    check(id: string): Promise<{rounds: number; clean: boolean; interrupted: string | null; canContinue: boolean; previewMissing: boolean; running: boolean; writeStopped: boolean} | null>;
     last(id: string): Promise<{out: string; url: string} | null>;
     state(id: string): Promise<any>;
     edit(id: string, instruction: string): Promise<{n: number; summary: string; view: any}>;
@@ -354,6 +373,9 @@ interface Bridge {
   plan: {save(id: string, plan: unknown, assetsPlan?: unknown): Promise<boolean>; ai(id: string, brief?: string): Promise<any>; edit(id: string, instruction: string): Promise<{n: number; summary: string}>; history(id: string): Promise<PlanChange[]>; restore(id: string, n: number): Promise<boolean>};
   looks: {list(): Promise<Look[]>; meta(): Promise<LookMeta>; save(l: Partial<Look>): Promise<Look>; remove(id: string): Promise<void>; sample(): Promise<string>; ai(r: {referencePath?: string; description?: string; name?: string}): Promise<Omit<Look, 'id' | 'builtin'>>};
   library: {list(): Promise<Reference[]>; add(file: string): Promise<unknown>; remove(id: string): Promise<void>};
+  memory: {counts(): Promise<Record<string, number>>; read(id: string): Promise<{at: number; kind: string; text: string}[]>; forget(id: string): Promise<boolean>};
+  free: {test(o?: {base?: string; key?: string}): Promise<{ok: boolean; message: string}>};
+  gateway: {status(): Promise<GatewayStatus>; addKey(platform: string, key: string): Promise<unknown>; removeKey(id: number): Promise<unknown>};
   analyze: {list(): Promise<AnalysisSummary[]>; get(id: string): Promise<Analysis>; remove(id: string): Promise<void>; ytdlp(): Promise<{ok: boolean; version?: string; how?: string}>; install(): Promise<{ok: boolean; version?: string}>; start(r: {url?: string; file?: string; cookies?: string}): Promise<{id: string}>};
   shell: {external(u: string): Promise<boolean>; reveal(p: string): Promise<void>; open(p: string): Promise<string>; folder(): Promise<string | null>};
 }

@@ -350,24 +350,91 @@ export const MotionVoice = ({project, persist}: P) => {
       setBusy(false);
     }
   };
-  if (!m.script || !m.script.length) {
-    return (
-      <div className="card empty">
-        <h2>Write the script first</h2>
-        <a className="btn primary" href={`#/project/${project.id}/script`}>
-          Go to Script
-        </a>
-      </div>
-    );
-  }
+  // the voice-over is either made by ElevenLabs from the script, or your own recording (transcribed with word times; its words become the script)
+  const fromRecording = m.voice?.source === 'recording' || m.scriptSource === 'recording';
+  const [mode, setMode] = useState<'eleven' | 'recording'>(fromRecording ? 'recording' : 'eleven');
+  const upload = async () => {
+    const f = await api().media.pick(['audio']);
+    if (!f[0]) return;
+    setBusy(true);
+    try {
+      const next = await api().motion.recording(project.id, f[0]);
+      await persist(next);
+      toast('Your recording is transcribed. Its words are now the script, so the video follows exactly what you say.');
+    } catch (e: any) {
+      if (!/stopped/i.test(e.message)) toast(e.message, 'bad');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const backToWritten = async () => {
+    try {
+      const next = await api().motion.writtenScript(project.id);
+      await persist(next);
+      toast('Your written script is back. Choose a voice and record it.');
+    } catch (e: any) {
+      toast(e.message, 'bad');
+    }
+  };
+  const hasScript = !!(m.script && m.script.length);
   return (
     <div className="stack" style={{gap: 'var(--sp-5)'}}>
       <div>
         <h2>Voice</h2>
-        <p className="muted">Choose a voice from your ElevenLabs account. The voice-over comes back with the time of every word, so captions and graphics land exactly on it.</p>
+        <p className="muted">The voice-over drives the whole video: captions and graphics land on the time of every word. Let ElevenLabs read your script, or use your own recording.</p>
       </div>
-      {error ? <div className="notice bad">{error}</div> : null}
+      <div className="seg" role="group" aria-label="Where the voice-over comes from" style={{alignSelf: 'flex-start'}}>
+        <button aria-pressed={mode === 'eleven'} onClick={() => setMode('eleven')} disabled={busy}>
+          ElevenLabs voice
+        </button>
+        <button aria-pressed={mode === 'recording'} onClick={() => setMode('recording')} disabled={busy}>
+          My own recording
+        </button>
+      </div>
+      {error && mode === 'eleven' ? <div className="notice bad">{error}</div> : null}
+      {mode === 'recording' ? (
+        <section className="card pad stack" style={{gap: 'var(--sp-3)'}}>
+          <span>Use an audio file you recorded (MP3, WAV, M4A...). It is transcribed with the time of every word (Tunisian, Arabic, French, English and more are detected on their own), and its words become the script, so the video follows exactly what you say.</span>
+          {hasScript && m.scriptSource !== 'recording' ? <span className="help">Your written script is kept: you can switch back to it with an ElevenLabs voice at any time.</span> : null}
+          <div className="row wrap">
+            <button className="btn primary" disabled={busy} onClick={upload}>
+              <MusicNote size={18} aria-hidden /> {busy ? 'Transcribing your recording' : m.voice?.source === 'recording' ? 'Use another recording' : 'Choose an audio file'}
+            </button>
+            {m.voice?.source === 'recording' ? <span className="help">{m.voice.fileName}{m.voice.language ? `, ${m.voice.language}` : ''}</span> : null}
+          </div>
+          <AiPanel job="script" />
+          {m.voice?.source === 'recording' && hasScript ? (
+            <details>
+              <summary style={{cursor: 'pointer'}}>The transcript ({m.script!.length} lines), now the script</summary>
+              <ol className="stack" style={{gap: 4, marginTop: 'var(--sp-2)', paddingLeft: 20}}>
+                {m.script!.map((l, i) => (
+                  <li key={i} dir="auto">
+                    {l.line}
+                  </li>
+                ))}
+              </ol>
+              <span className="help">A mis-heard word? Fix it in Script: the captions use the script's spelling.</span>
+            </details>
+          ) : null}
+        </section>
+      ) : !hasScript ? (
+        <div className="card empty">
+          <h3>Write the script first</h3>
+          <p className="muted">ElevenLabs reads your script. Or choose My own recording above.</p>
+          <a className="btn primary" href={`#/project/${project.id}/script`}>
+            Go to Script
+          </a>
+        </div>
+      ) : (
       <section className="card pad stack" style={{gap: 'var(--sp-3)'}}>
+        {m.scriptSource === 'recording' ? (
+          <div className="notice">
+            <span style={{flex: 1}}>The script is the transcript of your recording. To have ElevenLabs read your written script instead, bring it back first.</span>
+            <button className="btn secondary sm" onClick={backToWritten}>
+              Use my written script
+            </button>
+          </div>
+        ) : null}
         <div className="row between wrap">
           <span className="chip">{text.length} characters to read</span>
           {sub ? (
@@ -423,18 +490,21 @@ export const MotionVoice = ({project, persist}: P) => {
           ))}
         </div>
         <div className="row wrap">
-          <button className="btn primary" disabled={busy || !m.voiceId || (left !== null && left < text.length)} onClick={record}>
+          <button className="btn primary" disabled={busy || !m.voiceId || m.scriptSource === 'recording' || (left !== null && left < text.length)} onClick={record}>
             <Waveform size={18} aria-hidden /> {busy ? 'ElevenLabs is recording' : m.voice ? 'Record again' : 'Record the voice-over'}
           </button>
           {m.voiceName ? <span className="help">Voice: {m.voiceName.split(' - ')[0]}</span> : <span className="help">Choose a voice above.</span>}
         </div>
         <AiPanel job="script" />
       </section>
+      )}
       {m.voice && voiceUrl ? (
         <section className="card pad stack" style={{gap: 'var(--sp-2)'}}>
           <span className="row between wrap">
-            <span>Voice-over: {(m.voice.durationMs / 1000).toFixed(1)} s, {m.voice.words} words timed</span>
-            {Math.abs(m.voice.durationMs / 1000 - m.lengthS) / m.lengthS > 0.2 ? <span className="chip bad">Longer or shorter than {m.lengthS} s: shorten the script or change the speed</span> : <span className="chip ok">Fits {m.lengthS} s</span>}
+            <span>
+              {m.voice.source === 'recording' ? 'Your recording' : 'Voice-over'}: {(m.voice.durationMs / 1000).toFixed(1)} s, {m.voice.words} words timed
+            </span>
+            {m.voice.source === 'recording' ? <span className="chip">The video follows your recording's length</span> : Math.abs(m.voice.durationMs / 1000 - m.lengthS) / m.lengthS > 0.2 ? <span className="chip bad">Longer or shorter than {m.lengthS} s: shorten the script or change the speed</span> : <span className="chip ok">Fits {m.lengthS} s</span>}
           </span>
           <audio src={voiceUrl} controls style={{width: '100%'}} />
           <div className="row">
@@ -454,12 +524,18 @@ export const MotionBuild = ({project, persist, settings}: P & {settings: Setting
   const m = mOf(project);
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
+  // Fast (Sonnet, fewer reference frames, one check round) or Best quality (Opus, every frame, up to three rounds); remembered per project
+  const [speed, setSpeed] = useState<'fast' | 'best'>(((m as any).buildSpeed as 'fast' | 'best') || 'fast');
+  const pickSpeed = (v: 'fast' | 'best') => {
+    setSpeed(v);
+    persist({...project, motion: {...m, buildSpeed: v} as any}).catch(() => {});
+  };
   const {view, setView} = useAgentView(project.id);
   const provider = settings?.aiProvider || 'claude-code';
   const build = async () => {
     setBusy(true);
     try {
-      const r = await api().motion.build(project.id, {notes: notes.trim() || undefined});
+      const r = await api().motion.build(project.id, {notes: notes.trim() || undefined, speed});
       setView(r.view);
       await persist({...project, status: {...project.status, built: true}, settings: {...project.settings, agentActive: true}});
       toast(r.interrupted ? 'Your video is ready to watch. Claude stopped before finishing its checks: use "Finish the checks" when you can.' : 'Your video is ready to watch. Change anything in Edit, then render it in Render.');
@@ -485,7 +561,7 @@ export const MotionBuild = ({project, persist, settings}: P & {settings: Setting
   };
   const why = provider !== 'claude-code' ? 'Building needs Claude Code: in Settings, connect Claude with your Claude account.' : !m.voice ? 'Record the voice-over first.' : '';
   const wide = m.aspect === '16:9';
-  const [check, setCheck] = useState<{rounds: number; clean: boolean; interrupted: string | null; canContinue: boolean; previewMissing?: boolean} | null>(null);
+  const [check, setCheck] = useState<{rounds: number; clean: boolean; interrupted: string | null; canContinue: boolean; previewMissing?: boolean; running?: boolean; writeStopped?: boolean} | null>(null);
   useEffect(() => {
     api().agent.check(project.id).then(setCheck, () => setCheck(null));
   }, [project.id, view?.built, busy]);
@@ -493,7 +569,7 @@ export const MotionBuild = ({project, persist, settings}: P & {settings: Setting
     <div className="stack" style={{gap: 'var(--sp-5)'}}>
       <div>
         <h2>Build</h2>
-        <p className="muted">Claude reads the onetake method, studies your reference if you chose one, picks a concept, and animates every frame to your voice-over. It checks its own frames and fixes what is wrong, then you get a live preview. It takes 10 to 30 minutes and uses your Claude plan.</p>
+        <p className="muted">Claude reads the onetake method, studies your reference if you chose one, picks a concept, and animates every frame to your voice-over. It checks its own frames and fixes what is wrong, then you get a live preview with its sound. It uses your Claude plan; keep OmniMotion open while it works.</p>
       </div>
       <section className="card pad stack" style={{gap: 'var(--sp-3)'}}>
         <div className="row wrap">
@@ -502,6 +578,18 @@ export const MotionBuild = ({project, persist, settings}: P & {settings: Setting
           {m.voice ? <span className="chip">Voice {(m.voice.durationMs / 1000).toFixed(1)} s</span> : null}
           <span className="chip">Captions: {CAPTION_STYLES.find((c) => c[0] === (m.captions?.style || 'kinetic'))?.[1]}</span>
           <span className="chip">{m.reference ? 'With a reference' : 'No reference'}</span>
+        </div>
+        <div className="stack" style={{gap: 6}}>
+          <span className="label">Speed</span>
+          <div className="seg" role="group" aria-label="Build speed" style={{alignSelf: 'flex-start'}}>
+            <button aria-pressed={speed === 'fast'} onClick={() => pickSpeed('fast')} disabled={busy}>
+              Fast
+            </button>
+            <button aria-pressed={speed === 'best'} onClick={() => pickSpeed('best')} disabled={busy}>
+              Best quality
+            </button>
+          </div>
+          <span className="help">{speed === 'fast' ? 'Sonnet, 16 frames of the reference, one check round. Usually several times quicker; fix anything afterwards in Edit.' : 'Opus, every frame of the reference, up to three check rounds. The most refined result, and the slowest: often 20 to 45 minutes.'}</span>
         </div>
         <label className="field">
           <span className="label">Last words for Claude (optional)</span>
@@ -515,10 +603,15 @@ export const MotionBuild = ({project, persist, settings}: P & {settings: Setting
         </div>
         <AiPanel job="agent" onRetry={build} />
       </section>
-      {!busy && check && check.canContinue ? (
+      {!busy && check && check.writeStopped && !view ? (
+        <div className="notice">
+          <span style={{flex: 1}}>The last build stopped while Claude was still writing, so there is nothing to check yet. Click Build with Claude to start it again.</span>
+        </div>
+      ) : null}
+      {!busy && check && check.canContinue && !check.running ? (
         <div className="notice">
           <span style={{flex: 1}}>
-            {check.interrupted ? `Claude stopped during its checks: ${check.interrupted}.` : 'Claude has not finished checking this video.'} It went through {check.rounds} of 3 check rounds. {check.previewMissing ? 'Its work is kept, but there is no preview yet.' : 'The preview below is the video as it is now.'} Claude can pick up exactly where it stopped.
+            {check.interrupted ? `Claude stopped during its checks: ${check.interrupted}.` : 'Claude has not finished checking this video.'} It went through {check.rounds} of {(check as any).maxRounds || 3} check rounds. {check.previewMissing ? 'Its work is kept, but there is no preview yet.' : 'The preview below is the video as it is now.'} Claude can pick up exactly where it stopped.
           </span>
           <button className="btn secondary sm" onClick={finish} disabled={provider !== 'claude-code'}>
             Finish the checks

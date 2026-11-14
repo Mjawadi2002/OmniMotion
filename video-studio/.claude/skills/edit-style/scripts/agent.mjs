@@ -55,21 +55,32 @@ const SAFE = {x: [60, 1020], y: [230, 1500], bottom: 1500, right: 950};
 const studyReference = (reference) => {
   const ref = probe(reference);
   const refDur = Math.min(ref.duration, 180);
-  console.log(`Studying the reference (${refDur.toFixed(1)} s)...`);
+  // --fast: fewer pictures for Claude to read (4 sheets and 16 stills spread over the whole reference): every picture stays in its context,
+  // so a long reference with dozens of frames slows every step of the build
+  const fast = !!args.fast;
+  const refDir = path.join(ws, 'reference');
+  fs.mkdirSync(refDir, {recursive: true});
+  // a new study replaces the previous one (frames from an earlier build would otherwise pile up and be read too)
+  for (const f of fs.readdirSync(refDir)) if (/^(still-|sheet-)/.test(f)) fs.rmSync(path.join(refDir, f), {force: true});
+  console.log(`Studying the reference (${refDur.toFixed(1)} s)${fast ? ', fast: 4 sheets and 16 frames' : ''}...`);
   const per = 30; // frames per sheet (6 x 5), 15 s
-  const sheets = Math.ceil((refDur * 2) / per);
-  for (let k = 0; k < sheets; k++) ff(['-ss', String(k * 15), '-t', '15', '-i', reference, '-vf', 'fps=2,scale=300:-2,tile=6x5:padding=4:color=white', '-frames:v', '1', path.join(ws, 'reference', `sheet-${String(k + 1).padStart(2, '0')}.png`)]);
+  const allSheets = Math.ceil((refDur * 2) / per);
+  const pickEven = (n, max) => (n <= max ? Array.from({length: n}, (_, i) => i) : Array.from({length: max}, (_, i) => Math.round((i * (n - 1)) / (max - 1))));
+  const sheetIdx = fast ? pickEven(allSheets, 4) : pickEven(allSheets, allSheets);
+  const sheets = sheetIdx.length;
+  sheetIdx.forEach((k, j) => ff(['-ss', String(k * 15), '-t', '15', '-i', reference, '-vf', 'fps=2,scale=300:-2,tile=6x5:padding=4:color=white', '-frames:v', '1', path.join(ws, 'reference', `sheet-${String(j + 1).padStart(2, '0')}.png`)]));
   const sc = spawnSync('ffmpeg', ['-hide_banner', '-t', String(refDur), '-i', reference, '-vf', "select='gt(scene,0.28)',showinfo", '-f', 'null', '-'], {encoding: 'utf8', maxBuffer: 1 << 26});
   const cutsAt = [...(sc.stderr || '').matchAll(/pts_time:([0-9.]+)/g)].map((m) => Number(m[1]));
   const stillAt = new Set();
   for (let t = 0.6; t < refDur; t += 2.5) stillAt.add(Math.round(t * 10) / 10);
   cutsAt.forEach((t) => stillAt.add(Math.round((t + 0.25) * 10) / 10));
-  const stills = [...stillAt].filter((t) => t < refDur - 0.1).sort((a, b) => a - b).slice(0, 60);
+  const allStills = [...stillAt].filter((t) => t < refDur - 0.1).sort((a, b) => a - b);
+  const stills = fast ? pickEven(allStills.length, 16).map((i) => allStills[i]) : allStills.slice(0, 60);
   for (const t of stills) ff(['-ss', String(t), '-i', reference, '-frames:v', '1', '-vf', 'scale=720:-2', path.join(ws, 'reference', `still-${t.toFixed(1).padStart(5, '0')}s.png`)]);
   fs.writeFileSync(
     path.join(ws, 'reference', 'frames.md'),
     `# Reference frames\n\nDuration ${refDur.toFixed(1)} s, ${ref.width}x${ref.height}.\n\n` +
-      Array.from({length: sheets}, (_, k) => `- sheet-${String(k + 1).padStart(2, '0')}.png: ${k * 15} s to ${Math.min(refDur, (k + 1) * 15).toFixed(1)} s, 2 frames a second, 6 per row`).join('\n') +
+      sheetIdx.map((k, j) => `- sheet-${String(j + 1).padStart(2, '0')}.png: ${k * 15} s to ${Math.min(refDur, (k + 1) * 15).toFixed(1)} s, 2 frames a second, 6 per row`).join('\n') +
       `\n\nScene changes (cuts, layout changes, big graphic changes) at: ${cutsAt.map((t) => t.toFixed(2) + ' s').join(', ') || 'none detected'}\n`,
   );
   if (args.analysis && fs.existsSync(args.analysis)) fs.copyFileSync(args.analysis, path.join(ws, 'reference', 'analysis.md'));

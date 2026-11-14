@@ -8,7 +8,10 @@ import {getProject, getSettings, listProjects, newId, publicSettings, removeProj
 import {attach, detach, ensureWorkspace, kindOf, poster} from './media.mjs';
 import {activeRuns, cancelRun, engineInfo, readJob, saveAssetsPlan, savePlan, startRun} from './engine.mjs';
 import {lastUsage, planWithAi, testAi} from './ai.mjs';
-import {cancelAi, setAiSender, startAiRun} from './airun.mjs';
+import {aiBusy, cancelAi, setAiSender, startAiRun} from './airun.mjs';
+import {forget, memoryCounts, readMemory, remember, withProject} from './memory.mjs';
+import {testFree} from './freellm.mjs';
+import {addGatewayKey, gatewayAvailable, gatewayStatus, removeGatewayKey, stopGateway} from './gateway.mjs';
 import {useBundledTools} from './runtime.mjs';
 import {cancelLogin, claudeStatus, installClaude, sendLoginCode, signOut, startLogin} from './claude.mjs';
 import {editWithAi} from './aiedit.mjs';
@@ -18,7 +21,7 @@ import {ensureSample, listLooks, lookMeta, lookPathFor, removeLook, saveLook} fr
 import {lookWithAi} from './ailook.mjs';
 import {studyReference} from './aistyle.mjs';
 import {hookWithAi, readHook} from './aihook.mjs';
-import {SCRIPT_STEPS, VOICE_STEPS, makeVoice, writeScript} from './motion.mjs';
+import {RECORDING_STEPS, SCRIPT_STEPS, VOICE_STEPS, makeVoice, restoreWrittenScript, useRecording, writeScript} from './motion.mjs';
 import {MODELS, listVoices, subscription} from './eleven.mjs';
 import {CONTINUE_STEPS, agentCheck, continueChecks, MOTION_STEPS, startMotionBuild, AGENT_EDIT_STEPS, AGENT_RENDER_STEPS, AGENT_STEPS, TIMELINE_INSTRUCTION, agentBeats, agentEdit, agentRender, agentSaveBeats, agentState, agentUndo, startAgentBuild} from './agentbuild.mjs';
 import {analyzeVideo, getAnalysis, installYtdlp, listAnalyses, removeAnalysis, ytdlpStatus} from './competitor.mjs';
@@ -63,10 +66,13 @@ const inside = (p, root) => {
 
 const emit = (ev) => win && !win.isDestroyed() && win.webContents.send('run:event', ev);
 
+// a call whose first argument is a project id runs "inside" that project, so every Claude conversation it starts gets the project's memory
 const handle = (name, fn) =>
   ipcMain.handle(name, async (_e, ...args) => {
     try {
-      return {ok: true, data: await fn(...args)};
+      const id = args[0];
+      const run = () => fn(...args);
+      return {ok: true, data: await (typeof id === 'string' && /^[a-f0-9]{8}$/.test(id) ? withProject(id, run) : run())};
     } catch (err) {
       return {ok: false, error: String(err?.message || err)};
     }
@@ -151,6 +157,11 @@ const registerIpc = () => {
   });
   handle('plan:save', (id, plan, assetsPlan) => {
     const p = requireProject(id);
+    const known = new Set(readMemory(id).filter((m) => m.kind === 'spelling').map((m) => m.text));
+    for (const fix of Object.values((plan && plan.wordFixes) || {})) {
+      const t = `write "${String(fix).slice(0, 60)}" exactly like this in captions and graphics`;
+      if (!known.has(t)) remember(id, 'spelling', t);
+    }
     savePlan(p, plan);
     if (assetsPlan) saveAssetsPlan(p, assetsPlan);
     return true;
@@ -158,6 +169,16 @@ const registerIpc = () => {
   // live progress of Claude's work (plan, edit, look) for the window
   setAiSender((ev) => win && !win.isDestroyed() && win.webContents.send('ai:event', ev));
   handle('ai:cancel', () => cancelAi());
+  handle('memory:counts', () => memoryCounts());
+  handle('memory:read', (id) => readMemory(id));
+  handle('memory:forget', (id) => {
+    forget(id);
+    return true;
+  });
+  handle('gateway:status', () => (gatewayAvailable() ? gatewayStatus() : {running: false, missing: true}));
+  handle('gateway:addKey', (platform, key) => addGatewayKey(String(platform || ''), String(key || '')));
+  handle('gateway:removeKey', (id) => removeGatewayKey(id));
+  handle('free:test', (o) => testFree(o && typeof o === 'object' ? {base: o.base, key: o.key} : {}));
   const PLAN_STEPS = [
     {id: 'read', label: 'Reading your transcript'},
     {id: 'files', label: 'Preparing your files'},
@@ -225,6 +246,7 @@ const registerIpc = () => {
       const r = await editWithAi(p, job, instruction, before, past, run);
       run.step('save', 'active');
       const n = pushHistory(p, {instruction, summary: r.summary, tokens: r.tokens, before});
+      remember(p.id, 'edit', `asked "${String(instruction).slice(0, 180)}" -> done: ${String(r.summary || '').slice(0, 180)}`);
       savePlan(p, r.plan);
       run.step('save', 'done');
       run.end(true, {tokens: r.tokens, summary: r.summary});
@@ -256,7 +278,8 @@ const registerIpc = () => {
   };
   handle('agent:build', (id, opts) =>
     agentJob(id, 'agent', 'Claude is rebuilding the reference on your footage', AGENT_STEPS, async (p, run) => {
-      const r = await startAgentBuild(p, readJob(p, mediaUrl), {reference: opts && opts.reference, notes: opts && opts.notes}, run);
+      const r = await startAgentBuild(p, readJob(p, mediaUrl), {reference: opts && opts.reference, notes: opts && opts.notes, speed: opts && opts.speed}, run);
+      remember(p.id, 'build', `reference style rebuilt on the footage (${(opts && opts.speed) || 'fast'}), checks ${r.clean ? 'clean' : r.interrupted ? 'stopped early' : 'done with fixes'}; change it from here instead of rebuilding`);
       saveProject({...p, settings: {...p.settings, agentActive: true}});
       return r;
     }),
@@ -288,15 +311,47 @@ const registerIpc = () => {
       throw e;
     }
   });
-  handle('motion:build', (id, opts) => agentJob(id, 'agent', 'Claude is animating your video', MOTION_STEPS, (p, run) => startMotionBuild(p, opts || {}, run)));
+  // your own recording: copied, transcribed with word times, and its transcript becomes the script
+  handle('motion:recording', async (id, file) => {
+    const p = requireProject(id);
+    const run = startAiRun('script', 'Using your recording', RECORDING_STEPS);
+    try {
+      const next = await useRecording(p, typeof file === 'string' ? file : '', run);
+      run.end(true, {});
+      return next;
+    } catch (e) {
+      run.end(false, {error: e.message});
+      throw e;
+    }
+  });
+  handle('motion:writtenScript', (id) => restoreWrittenScript(requireProject(id)));
+  handle('motion:build', (id, opts) =>
+    agentJob(id, 'agent', 'Claude is animating your video', MOTION_STEPS, async (p, run) => {
+      const r = await startMotionBuild(p, opts || {}, run);
+      remember(p.id, 'build', `motion video built (${(opts && opts.speed) || 'fast'}), checks ${r.clean ? 'clean' : r.interrupted ? 'stopped early' : 'done with fixes'}; change it from here instead of rebuilding`);
+      return r;
+    }),
+  );
   // a build that stopped part way (usage limit, network...): Claude resumes its own conversation and finishes the check rounds
   handle('agent:check', (id) => agentCheck(requireProject(id)));
   handle('agent:continue', (id) => agentJob(id, 'agent', 'Claude is finishing the checks', CONTINUE_STEPS, (p, run) => continueChecks(p, run)));
   handle('agent:beats', (id) => agentBeats(requireProject(id)));
   handle('agent:saveBeats', (id, beats, label) => agentJob(id, 'edit', 'Updating the timeline', [{id: 'preview', label: 'Rebuilding the preview'}], (p, run) => agentSaveBeats(p, beats, label, run)));
   handle('agent:enableTimeline', (id) => agentJob(id, 'edit', 'Claude is making the timeline editable', AGENT_EDIT_STEPS, (p, run) => agentEdit(p, TIMELINE_INSTRUCTION, run)));
-  handle('agent:edit', (id, instruction) => agentJob(id, 'edit', 'Claude is changing your edit', AGENT_EDIT_STEPS, (p, run) => agentEdit(p, String(instruction || '').slice(0, 2000), run)));
-  handle('agent:undo', (id) => agentJob(id, 'edit', 'Undoing the last change', [{id: 'preview', label: 'Rebuilding the preview'}], (p, run) => agentUndo(p, run)));
+  handle('agent:edit', (id, instruction) =>
+    agentJob(id, 'edit', 'Claude is changing your edit', AGENT_EDIT_STEPS, async (p, run) => {
+      const r = await agentEdit(p, String(instruction || '').slice(0, 2000), run);
+      remember(p.id, 'edit', `asked "${String(instruction).slice(0, 180)}" -> done: ${String((r && r.summary) || '').slice(0, 180)}`);
+      return r;
+    }),
+  );
+  handle('agent:undo', (id) =>
+    agentJob(id, 'edit', 'Undoing the last change', [{id: 'preview', label: 'Rebuilding the preview'}], async (p, run) => {
+      const r = await agentUndo(p, run);
+      remember(p.id, 'undo', 'the user undid the last change to the video: do not bring it back unless asked');
+      return r;
+    }),
+  );
   handle('agent:render', (id, opts) =>
     agentJob(id, 'agent', 'Rendering your Agent build', AGENT_RENDER_STEPS, async (p, run) => {
       const r = await agentRender(p, opts, run);
@@ -317,6 +372,7 @@ const registerIpc = () => {
   handle('plan:history', (id) => listHistory(requireProject(id)));
   handle('plan:restore', (id, n) => {
     restoreHistory(requireProject(id), n);
+    remember(id, 'undo', `the user undid change ${n}: do not bring it back unless asked`);
     return true;
   });
 
@@ -438,6 +494,22 @@ const createWindow = () => {
     if (/^https?:/.test(url)) shell.openExternal(url);
     return {action: 'deny'};
   });
+  // closing the app ends Claude's work (a build, a change, an analysis): ask first, so a 30-minute build is not lost by accident
+  let leaving = false;
+  win.on('close', (e) => {
+    if (leaving || process.env.OMNIMOTION_SHOTS || !aiBusy()) return;
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'warning',
+      buttons: ['Keep working', 'Close and stop Claude'],
+      defaultId: 0,
+      cancelId: 0,
+      title: 'Claude is still working',
+      message: 'Claude is still working on your video.',
+      detail: 'If you close OmniMotion now, Claude stops and its unfinished work is lost (a build has to start again). Wait for it to finish, or close anyway.',
+    });
+    if (choice === 0) e.preventDefault();
+    else leaving = true;
+  });
   if (isDev) win.loadURL(process.env.OMNIMOTION_DEV_URL);
   else win.loadURL(`http://127.0.0.1:${mediaPort}/`);
   return win;
@@ -508,7 +580,22 @@ const startMediaServer = () =>
     listen(MEDIA_PORT);
   });
 
+// one OmniMotion at a time: two copies share the same projects, jobs and Claude sign-in, and a second copy starting or quitting
+// has been seen to end the first one's Claude build. Launching it again brings the open window forward instead.
+if (!app.requestSingleInstanceLock()) {
+  console.error('OmniMotion is already running: this copy closes.');
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (win && !win.isDestroyed()) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
+}
+
 app.whenReady().then(() => {
+  if (!app.hasSingleInstanceLock()) return;
   startMediaServer().then(() => {
     nativeTheme.themeSource = getSettings().theme || 'system';
     registerIpc();
@@ -519,3 +606,20 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => app.quit());
+// on Windows a process started by the app outlives it: when OmniMotion quits, end Claude's work and any render it started,
+// so nothing keeps running (and using the Claude plan) after the window is gone
+app.on('will-quit', () => {
+  try {
+    cancelAi();
+  } catch {
+    // nothing running
+  }
+  for (const r of activeRuns()) {
+    try {
+      cancelRun(r.runId);
+    } catch {
+      // already ended
+    }
+  }
+  stopGateway();
+});

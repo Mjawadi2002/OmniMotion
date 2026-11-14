@@ -22,7 +22,7 @@ module.exports = {
   appId: 'app.omnimotion.studio',
   productName: 'OmniMotion',
   copyright: 'OmniMotion',
-  files: ['dist/**', 'electron/**', 'resources/**', 'package.json'],
+  files: ['dist/**', 'electron/**', 'resources/**', '!resources/freellmapi/**', 'package.json'],
   directories: {output: 'release'},
   afterPack: path.join(__dirname, 'scripts', 'after-pack.cjs'),
   electronLanguages: ['en-US', 'fr', 'ar'],
@@ -59,6 +59,8 @@ module.exports = {
       ],
     },
     {from: ffmpegDir, to: 'tools', filter: ['ffmpeg.exe', 'ffprobe.exe']},
+    // the built-in free model gateway (FreeLLMAPI, MIT; made by scripts/bundle-freellm.mjs): outside the asar, so Node can import it as an ES module
+    {from: 'resources/freellmapi', to: 'freellmapi'},
   ],
   win: {target: [{target: 'nsis', arch: ['x64']}], icon: 'resources/icon.ico'},
   nsis: {

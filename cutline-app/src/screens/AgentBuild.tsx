@@ -55,6 +55,7 @@ export const AgentBuild = ({project, job, settings, busy, persist}: {project: Pr
   const [reference, setReference] = useState<string>(project.settings?.agentReference || projectRefs[0]?.path || '');
   const [notes, setNotes] = useState<string>(project.settings?.agentNotes || '');
   const [working, setWorking] = useState(false);
+  const [speed, setSpeed] = useState<'fast' | 'best'>((project.settings as any)?.agentSpeed === 'best' ? 'best' : 'fast');
   const {view, setView} = useAgentView(project.id);
   const provider = settings?.aiProvider || 'claude-code';
 
@@ -69,8 +70,8 @@ export const AgentBuild = ({project, job, settings, busy, persist}: {project: Pr
     if (!reference) return toast('Choose a reference video first (attach one in Media, or add it to the Library).', 'bad');
     setWorking(true);
     try {
-      if (persist) await persist({...project, settings: {...project.settings, agentReference: reference, agentNotes: notes}});
-      const r = await api().agent.build(project.id, {reference, notes: notes.trim() || undefined});
+      if (persist) await persist({...project, settings: {...project.settings, agentReference: reference, agentNotes: notes, agentSpeed: speed} as any});
+      const r = await api().agent.build(project.id, {reference, notes: notes.trim() || undefined, speed});
       setView(r.view);
       if (persist) await persist({...project, settings: {...project.settings, agentReference: reference, agentNotes: notes, agentActive: true}});
       toast('Your edit is ready to watch. Change anything in Edit, then render it in Render.');
@@ -90,7 +91,7 @@ export const AgentBuild = ({project, job, settings, busy, persist}: {project: Pr
           <Robot size={20} aria-hidden /> Recreate a reference (Agent build)
         </h3>
         <p className="muted" style={{fontSize: 'var(--fs-sm)', maxWidth: 760}}>
-          Claude studies the reference frame by frame and builds this edit from scratch in the same style: captions, layouts, cards, transitions and motion graphics, even ones the built-in looks don't have. It checks its own frames and fixes overlaps and anything covering your face. You get a live preview to watch, change in Edit, and render in Render. Building takes 10 to 30 minutes and uses your Claude plan.
+          Claude studies the reference frame by frame and builds this edit from scratch in the same style: captions, layouts, cards, transitions and motion graphics, even ones the built-in looks don't have. It checks its own frames and fixes overlaps and anything covering your face. You get a live preview to watch, change in Edit, and render in Render. It uses your Claude plan; keep OmniMotion open while it works.
         </p>
       </div>
 
@@ -118,6 +119,19 @@ export const AgentBuild = ({project, job, settings, busy, persist}: {project: Pr
           ) : null}
         </select>
       </label>
+
+      <div className="stack" style={{gap: 6}}>
+        <span className="help">Speed</span>
+        <div className="seg" role="group" aria-label="Build speed" style={{alignSelf: 'flex-start'}}>
+          <button aria-pressed={speed === 'fast'} onClick={() => setSpeed('fast')} disabled={working || busy}>
+            Fast
+          </button>
+          <button aria-pressed={speed === 'best'} onClick={() => setSpeed('best')} disabled={working || busy}>
+            Best quality
+          </button>
+        </div>
+        <span className="help">{speed === 'fast' ? 'Sonnet, 16 frames of the reference, one check round. Usually several times quicker; fix anything afterwards in Edit.' : 'Opus, every frame of the reference, up to three check rounds. The most refined result, and the slowest: often 20 to 45 minutes.'}</span>
+      </div>
 
       <label className="stack" style={{gap: 6}}>
         <span className="help">Notes for Claude (optional)</span>

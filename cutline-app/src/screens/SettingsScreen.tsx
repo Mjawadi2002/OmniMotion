@@ -1,6 +1,6 @@
-import {useState, type ReactNode} from 'react';
+import {useEffect, useState, type ReactNode} from 'react';
 import {CheckCircle, Warning, XCircle} from '@phosphor-icons/react';
-import {api, type EngineInfo, type Settings} from '../lib/api';
+import {api, type EngineInfo, type GatewayStatus, type Settings} from '../lib/api';
 import {useToast} from '../lib/util';
 import {ClaudeConnect} from './ClaudeConnect';
 
@@ -14,7 +14,7 @@ const Section = ({title, desc, children}: {title: string; desc: string; children
   </section>
 );
 
-const KeyField = ({label, has, name, onChange, help}: {label: string; has: boolean; name: 'elevenlabs' | 'anthropic'; onChange: () => void; help: string}) => {
+const KeyField = ({label, has, name, onChange, help}: {label: string; has: boolean; name: 'elevenlabs' | 'anthropic' | 'freellm'; onChange: () => void; help: string}) => {
   const toast = useToast();
   const [v, setV] = useState('');
   const save = async () => {
@@ -162,6 +162,10 @@ export const SettingsScreen = ({settings, engine, onChange}: {settings: Settings
         ) : null}
       </Section>
 
+      <FreeModels settings={settings} save={save} onChange={onChange} />
+
+      <MemorySection settings={settings} save={save} />
+
       <Section title="Folders" desc="Where projects live and where the editing engine is installed.">
         <div className="field">
           <label>Projects folder</label>
@@ -227,5 +231,264 @@ export const SettingsScreen = ({settings, engine, onChange}: {settings: Settings
         </div>
       </Section>
     </div>
+  );
+};
+
+// Free models: the gateway built into OmniMotion (FreeLLMAPI, nothing to install) with the free keys the user adds here,
+// or the user's own FreeLLMAPI. Only OmniMotion uses it.
+const PRESET_MODELS = ['auto:smart', 'auto', 'auto:fast'];
+const FreeModels = ({settings, save, onChange}: {settings: Settings; save: (p: any) => Promise<void>; onChange: () => void}) => {
+  const [res, setRes] = useState<{ok: boolean; message: string} | null>(null);
+  const [testing, setTesting] = useState(false);
+  const mode = settings.llmMode || 'claude';
+  const source = settings.freeSource || 'builtin';
+  const model = settings.freeModel || 'auto:smart';
+  const preset = PRESET_MODELS.includes(model);
+  const test = async () => {
+    setTesting(true);
+    setRes(null);
+    try {
+      setRes(await api().free.test());
+    } catch (e: any) {
+      setRes({ok: false, message: e.message});
+    } finally {
+      setTesting(false);
+    }
+  };
+  return (
+    <Section
+      title="Free models"
+      desc="Run OmniMotion's AI work on free models when you want, or when your Claude limit is reached. The free model gateway is built into OmniMotion: you only add the free keys you get from each provider. Only OmniMotion uses it; your system and your Claude setup are not changed."
+    >
+      <div className="field">
+        <span className="label">Which AI does the work</span>
+        <div className="seg" role="group" aria-label="Which AI does the work" style={{alignSelf: 'flex-start'}}>
+          <button aria-pressed={mode === 'claude'} onClick={() => save({llmMode: 'claude'})}>
+            Claude only
+          </button>
+          <button aria-pressed={mode === 'fallback'} onClick={() => save({llmMode: 'fallback'})}>
+            Claude, then free
+          </button>
+          <button aria-pressed={mode === 'free'} onClick={() => save({llmMode: 'free'})}>
+            Free only
+          </button>
+        </div>
+        <span className="help">
+          {mode === 'claude'
+            ? 'Everything uses your Claude plan.'
+            : mode === 'fallback'
+              ? 'Claude does the work; when your Claude limit is reached, the same job continues on free models in the same conversation, from where Claude stopped.'
+              : 'Everything uses the free models, never your Claude plan.'}
+        </span>
+      </div>
+      {mode !== 'claude' ? (
+        <>
+          <div className="notice">
+            <span style={{flex: 1}}>
+              The method, rules and checks stay exactly the same, but free models are weaker than Claude: scripts, edits and reports usually go well; full animation builds are rougher and slower, and free tiers have daily limits. Each provider's terms still apply to the keys you add.
+            </span>
+          </div>
+          <div className="field">
+            <span className="label">Gateway</span>
+            <div className="seg" role="group" aria-label="Free model gateway" style={{alignSelf: 'flex-start'}}>
+              <button aria-pressed={source === 'builtin'} onClick={() => save({freeSource: 'builtin'})}>
+                Built into OmniMotion
+              </button>
+              <button aria-pressed={source === 'external'} onClick={() => save({freeSource: 'external'})}>
+                My own FreeLLMAPI
+              </button>
+            </div>
+          </div>
+          {source === 'builtin' ? (
+            <BuiltinGateway />
+          ) : (
+            <>
+              <div className="field">
+                <label htmlFor="free-base">Gateway address</label>
+                <input id="free-base" className="input" defaultValue={settings.freeBase || 'http://127.0.0.1:3001'} placeholder="http://127.0.0.1:3001" onBlur={(e) => save({freeBase: e.target.value.trim()})} />
+                <span className="help">Where your FreeLLMAPI runs (the default port is 3001).</span>
+              </div>
+              <KeyField label="FreeLLMAPI key" name="freellm" has={!!settings.hasKeys.freellm} onChange={onChange} help="The unified key from your FreeLLMAPI dashboard (it starts with freellmapi-)." />
+            </>
+          )}
+          <div className="field">
+            <label htmlFor="free-model">Model</label>
+            <select id="free-model" className="input" value={preset ? model : 'custom'} onChange={(e) => e.target.value !== 'custom' && save({freeModel: e.target.value})}>
+              <option value="auto:smart">Smartest available (auto:smart)</option>
+              <option value="auto">Balanced (auto)</option>
+              <option value="auto:fast">Fastest (auto:fast)</option>
+              <option value="custom">A specific model (type it below)</option>
+            </select>
+            <input className="input" defaultValue={preset ? '' : model} placeholder="Optional: a model id from the gateway" onBlur={(e) => e.target.value.trim() && save({freeModel: e.target.value.trim()})} />
+            <span className="help">The gateway picks among the providers you added; the smartest fits OmniMotion's work best.</span>
+          </div>
+          <div className="row wrap">
+            <button className="btn primary" disabled={testing || (source === 'external' && !settings.hasKeys.freellm)} onClick={test}>
+              {testing ? 'Testing' : 'Test the gateway'}
+            </button>
+          </div>
+          {res ? (
+            <div className={`notice ${res.ok ? '' : 'bad'}`} role="status">
+              {res.ok ? <CheckCircle size={18} color="var(--ok)" aria-hidden /> : <XCircle size={18} color="var(--danger)" aria-hidden />}
+              <span>{res.message}</span>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </Section>
+  );
+};
+
+// the providers to add keys for, each with its official key page and what it is good for
+const BuiltinGateway = () => {
+  const toast = useToast();
+  const [st, setSt] = useState<GatewayStatus | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+  const load = () =>
+    api()
+      .gateway.status()
+      .then((x) => {
+        setSt(x);
+        setErr(null);
+      })
+      .catch((e) => setErr(e.message));
+  useEffect(() => {
+    load();
+  }, []);
+  const add = async (platform: string) => {
+    setBusy(platform);
+    try {
+      await api().gateway.addKey(platform, drafts[platform] || '');
+      setDrafts((d) => ({...d, [platform]: ''}));
+      toast('Key added. The gateway checks it in the background.');
+      await load();
+    } catch (e: any) {
+      toast(e.message, 'bad');
+    } finally {
+      setBusy(null);
+    }
+  };
+  const remove = async (id: number) => {
+    await api().gateway.removeKey(id);
+    await load();
+  };
+  if (err) return <div className="notice bad">The built-in gateway did not start: {err}</div>;
+  if (!st) return <span className="muted">Starting the built-in gateway</span>;
+  if (st.missing) return <div className="notice bad">This build of OmniMotion does not include the free model gateway.</div>;
+  return (
+    <div className="stack" style={{gap: 'var(--sp-2)'}}>
+      <span className="help">
+        {st.usablePlatforms && st.usablePlatforms.length
+          ? `Running. Keys for ${st.usablePlatforms.length} provider${st.usablePlatforms.length === 1 ? '' : 's'}; add more for more free capacity (when one provider hits its limit, the next one answers).`
+          : 'Running. Add at least one free key below: Google AI Studio and Groq are the best start.'}
+      </span>
+      {(st.providers || []).map((p) => (
+        <div key={p.platform} className="card pad stack" style={{gap: 'var(--sp-2)'}}>
+          <div className="row between wrap" style={{gap: 'var(--sp-2)'}}>
+            <b>{p.name}</b>
+            <button className="btn ghost sm" onClick={() => api().shell.external(p.url)}>
+              Get a free key
+            </button>
+          </div>
+          <span className="help">
+            {p.good}
+            {p.note ? ` ${p.note}` : ''}
+          </span>
+          {p.keys.map((k) => (
+            <div key={k.id} className="row between" style={{gap: 'var(--sp-2)'}}>
+              <span className="mono" style={{fontSize: 'var(--fs-sm)'}}>
+                {k.masked} <span className="faint">{k.status === 'healthy' || k.status === 'ok' ? 'working' : k.status === 'unknown' ? 'checking' : k.status}</span>
+              </span>
+              <button className="btn ghost sm" onClick={() => remove(k.id)}>
+                Remove
+              </button>
+            </div>
+          ))}
+          <div className="row" style={{gap: 'var(--sp-2)'}}>
+            <input className="input" type="password" autoComplete="off" placeholder={`Paste your ${p.name} key`} value={drafts[p.platform] || ''} onChange={(e) => setDrafts((d) => ({...d, [p.platform]: e.target.value}))} />
+            <button className="btn primary" disabled={busy === p.platform || !(drafts[p.platform] || '').trim()} onClick={() => add(p.platform)}>
+              {busy === p.platform ? 'Adding' : 'Add'}
+            </button>
+          </div>
+        </div>
+      ))}
+      <span className="help">Keys are stored encrypted on this computer, by the gateway inside OmniMotion. FreeLLMAPI (MIT, by Tashfeen Ahmed) powers it.</span>
+    </div>
+  );
+};
+
+// What Claude remembers: your own note, and what each project has learned (recorded by the app, no extra AI calls)
+const MemorySection = ({settings, save}: {settings: Settings; save: (p: any) => Promise<void>}) => {
+  const toast = useToast();
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [projects, setProjects] = useState<{id: string; name: string}[]>([]);
+  const [open, setOpen] = useState<string | null>(null);
+  const [items, setItems] = useState<{at: number; kind: string; text: string}[]>([]);
+  const load = () => {
+    api().memory.counts().then(setCounts).catch(() => {});
+    api().projects.list().then((l: any[]) => setProjects(l.map((p) => ({id: p.id, name: p.name})))).catch(() => {});
+  };
+  useEffect(load, []);
+  const show = async (id: string) => {
+    if (open === id) return setOpen(null);
+    setItems(await api().memory.read(id));
+    setOpen(id);
+  };
+  const clear = async (id: string) => {
+    await api().memory.forget(id);
+    toast('This project memory is cleared.');
+    setOpen(null);
+    load();
+  };
+  const withMemory = projects.filter((p) => counts[p.id]);
+  return (
+    <Section
+      title="Memory"
+      desc="So Claude does not ask again or redo what was settled. OmniMotion keeps it on this computer: your note below, and for each project the changes you asked for and what was done, undos, spelling fixes and builds. It is given to Claude at the start of each new job; no extra AI calls."
+    >
+      <div className="field">
+        <label htmlFor="mem-note">Always remember (about you and your videos)</label>
+        <textarea id="mem-note" className="input" rows={3} defaultValue={settings.memoryNote || ''} placeholder="For example: I am a Tunisian creator in Greece; my handle is @...; captions never in all caps; my audience speaks Tunisian Arabic and French." onBlur={(e) => save({memoryNote: e.target.value.slice(0, 1500)})} />
+        <span className="help">Saved when you leave the box. Keep it short: it goes into every job.</span>
+      </div>
+      <div className="stack" style={{gap: 'var(--sp-2)'}}>
+        <span className="label">What each project remembers</span>
+        {withMemory.length ? (
+          withMemory.map((p) => (
+            <div key={p.id} className="card pad stack" style={{gap: 'var(--sp-2)'}}>
+              <div className="row between wrap">
+                <span>
+                  {p.name} <span className="faint">({counts[p.id]})</span>
+                </span>
+                <span className="row" style={{gap: 4}}>
+                  <button className="btn ghost sm" onClick={() => show(p.id)}>
+                    {open === p.id ? 'Hide' : 'Show'}
+                  </button>
+                  <button className="btn ghost sm" onClick={() => clear(p.id)}>
+                    Clear
+                  </button>
+                </span>
+              </div>
+              {open === p.id ? (
+                <ul className="stack" style={{gap: 4, margin: 0, paddingLeft: 18, fontSize: 'var(--fs-sm)'}}>
+                  {items.map((it, i) => (
+                    <li key={i}>
+                      <span className="faint">
+                        {new Date(it.at).toLocaleDateString()} {it.kind}:
+                      </span>{' '}
+                      {it.text}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))
+        ) : (
+          <span className="help">Nothing yet: projects start remembering as you plan, change and build them.</span>
+        )}
+      </div>
+    </Section>
   );
 };
